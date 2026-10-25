@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+.ipynb_checkpoints/
+.pytest_cache/
+.ruff_cache/
+# Raw/large datasets and generated outputs (keep out of Git)
+data/raw/**
+data/interim/**
+data/processed/**
+!data/raw/.gitkeep
+!data/interim/.gitkeep
+!data/processed/.gitkeep
+*.zip
+*.tif
+*.tiff
+*.nc
+*.grib
+*.grb
+*.h5
+*.hdf5
+# Keep curated figures/tables reviewable; no sensitive material
+.DS_Store
+Thumbs.db
