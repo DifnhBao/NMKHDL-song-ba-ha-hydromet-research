@@ -559,9 +559,11 @@ def main():
     print("\n[6/6] Xuất kết quả...")
 
     # hydrology_clean.csv — dữ liệu kèm cờ chất lượng
+    # V1.1 §4: Giữ cả các trường sản lượng lũy kế để kiểm tra chéo
     clean_cols = [
         "date", "upstream_level_m", "downstream_level_m",
         "inflow_m3s", "release_m3s", "daily_energy_kwh",
+        "month_cumulative_kwh", "quarter_cumulative_kwh", "year_cumulative_kwh",
         "max_power_mw", "year_month",
         "inflow_quality", "upstream_level_quality",
         "downstream_level_quality", "release_quality",
