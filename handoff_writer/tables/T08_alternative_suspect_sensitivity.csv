@@ -1,0 +1,3 @@
+scenario,n_pairs_lag0,pearson_lag0,n_pairs_lag1,pearson_lag1,inflow_nov_2025_m3s,notes
+VALID_ONLY,36,0.5856,35,0.6147,1198.01,Main analysis excludes individual SUSPECT daily inflows
+INCLUDE_SUSPECT_AS_REPORTED,36,0.5409,35,0.4839,2127.0523,Illustrative sensitivity only; suspect values not independently verified
