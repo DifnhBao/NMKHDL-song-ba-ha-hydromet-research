@@ -293,7 +293,7 @@ def main():
 - Kiểm tra: `dam_inside_polygon = {basin['dam_inside_polygon']}`,
   `powerhouse_inside_polygon = {basin['powerhouse_inside_polygon']}`,
   `geometry_valid = {basin['geometry_valid']}`.
-- Trạng thái phê duyệt: **{approval.get('approved_by', 'PENDING_SUPERVISOR_APPROVAL')}**.
+- Trạng thái phê duyệt: **{approval.get('approval_status', 'PENDING_SUPERVISOR_APPROVAL')}** — chấp nhận polygon có điều kiện, không phải nghiệm thu toàn bộ đề tài.
 
 Chi tiết quy trình: `outputs/quality/basin_method.md`; bằng chứng số:
 `data/processed/basin_validation.csv`.
@@ -387,8 +387,9 @@ Chi tiết quy trình: `outputs/quality/basin_method.md`; bằng chứng số:
 Tổng số bản ghi ngoại lệ: **{len(exceptions)}**. Phân bố theo biến:
 {", ".join(f"{k} ({v})" for k, v in exc_by_var.items())}.
 
-- `SUSPECT`: {exc_by_flag.get('SUSPECT', 0)} bản ghi — giữ nguyên giá trị, đánh dấu
-  để kiểm tra độ nhạy, không loại khỏi phân tích chính.
+- `SUSPECT`: {exc_by_flag.get('SUSPECT', 0)} lượt ngoại lệ — bảo toàn giá trị nguồn;
+  loại khỏi phép tính trung bình tháng chính của biến tương ứng nếu chưa được xác minh,
+  đồng thời giữ kịch bản bao gồm SUSPECT để kiểm tra độ nhạy.
 - `INVALID_CONFIRMED`: {exc_by_flag.get('INVALID_CONFIRMED', 0)} bản ghi — không dùng
   trong phép tính chính, giữ nguyên bản gốc.
 
@@ -829,7 +830,18 @@ Ghi chú:
         (HANDOFF / "selected_data" / "data_dictionary.md").write_text(
             ddict.read_text(encoding="utf-8"), encoding="utf-8")
 
-    # Review appendix: values come from data files; do not freeze old correlations.
+    # Review appendix: read the actual recorded spatial-sensitivity evidence.
+    rainfall_audit_path = QA / "rainfall_spatial_sensitivity.csv"
+    if not rainfall_audit_path.exists():
+        raise RuntimeError("Missing rainfall_spatial_sensitivity.csv: rainfall method not auditable")
+    spatial_audit = pd.read_csv(rainfall_audit_path)
+    if len(spatial_audit) != 36 or not spatial_audit["delta_pct"].notna().all():
+        raise RuntimeError("CHIRPS spatial audit must cover 36 valid months")
+    mean_abs_bias = spatial_audit["delta_pct"].abs().mean()
+    max_abs_bias = spatial_audit["delta_pct"].abs().max()
+    recalculated_pixels = sorted(spatial_audit["center_cells"].unique().tolist())
+    historic_pixels = sorted(rain_m["n_pixels"].unique().tolist())
+
     reviewer_note = HANDOFF / "08_REVIEWER_NOTES.md"
     if reviewer_note.exists():
         alt_path = HANDOFF / "tables" / "T08_alternative_suspect_sensitivity.csv"
@@ -841,10 +853,13 @@ Ghi chú:
         appendices = {
             "02_data_sources_and_methods.md": (
                 "\n\n## Lưu ý nghiệm thu không gian\n"
-                "Polygon CHẤP NHẬN CÓ ĐIỀU KIỆN. Phương pháp mưa hiện dùng "
-                "mask pixel nhị phân và trọng số cos(vĩ độ); chưa tính phần "
-                "giao các ô biên và chưa định lượng sai lệch. "
-                "Chưa được chốt làm phương pháp cuối.\n"
+                "Polygon CHẤP NHẬN CÓ ĐIỀU KIỆN. Trưởng nhóm đã CHẤP NHẬN CÓ ĐIỀU KIỆN "
+                "phương pháp tính mưa xấp xỉ mask pixel nhị phân và cos(vĩ độ) cho bài tiểu luận. "
+                "Phương pháp này không tính phần giao các ô biên. "
+                f"Kiểm tra 36 tháng với trọng số diện tích giao: trung bình |Δ%|={mean_abs_bias:.4f}%, "
+                f"lớn nhất |Δ%|={max_abs_bias:.4f}%. "
+                f"Chuỗi cũ dùng {historic_pixels} pixel, tái tính dùng {recalculated_pixels}; "
+                "chưa xác định dứt điểm nguyên nhân. Xem outputs/quality/rainfall_spatial_sensitivity.csv.\n"
             ),
             "04_results_and_interpretation.md": (
                 "\n\n## Kiểm tra độ nhạy SUSPECT\n"
@@ -857,8 +872,9 @@ Ghi chú:
             ),
             "05_limitations.md": (
                 "\n\n## Giới hạn nghiệm thu cập nhật\n"
-                "Polygon chỉ được chấp nhận có điều kiện; trọng số giao pixel "
-                "CHIRPS chưa được xác minh từ raster nguyên bản. "
+                "Polygon và phương pháp mưa CHIRPS đã được trưởng nhóm chấp nhận có điều kiện; "
+                f"chênh lệch tương đối tối đa khi kiểm tra fractional-area là {max_abs_bias:.4f}%. "
+                "Sai khác 377/379 pixel giữa hai lần trích xuất chưa truy nguyên đầy đủ. "
                 "Kết quả lag 0/lag 1 không bền vững trước cách xử lý SUSPECT.\n"
             ),
         }
