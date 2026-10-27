@@ -828,6 +828,38 @@ Ghi chú:
         (HANDOFF / "selected_data" / "data_dictionary.md").write_text(
             ddict.read_text(encoding="utf-8"), encoding="utf-8")
 
+    # Keep research-review qualifications reproducible after re-running GATE 6.
+    # Do not overwrite 08_REVIEWER_NOTES.md, which records owner-approved decisions.
+    reviewer_note = HANDOFF / "08_REVIEWER_NOTES.md"
+    if reviewer_note.exists():
+        appendices = {
+            "02_data_sources_and_methods.md": (
+                "\\n\\n## Lưu ý nghiệm thu phương pháp (sau V1.1)\\n"
+                "Ranh giới lưu vực chỉ được CHẤP NHẬN CÓ ĐIỀU KIỆN như đại diện xấp xỉ. "
+                "CHIRPS dùng mask pixel nhị phân và trọng số cos(vĩ độ), không tính "
+                "phần giao pixel biên. Sai số chưa được định lượng; chưa chốt "
+                "phương pháp mưa cuối cùng. Xem 08_REVIEWER_NOTES.md.\\n"),
+            "04_results_and_interpretation.md": (
+                "\\n\\n## Bổ sung kiểm tra độ nhạy SUSPECT của trưởng nhóm\\n"
+                "Dữ liệu chính chỉ dùng ngày inflow VALID: Pearson lag 0=0,5856; "
+                "lag 1=0,6147. Nếu giữ cả ngày SUSPECT để kiểm tra độ nhạy: "
+                "lag 0=0,5409; lag 1=0,4839. Thứ tự bị đảo chiều, do đó "
+                "KHÔNG kết luận lag 1 mạnh hơn ổn định. Đây là phép kiểm tra "
+                "chưa xác thực các giá trị cực trị; xem bảng T08 và "
+                "08_REVIEWER_NOTES.md.\\n"),
+            "05_limitations.md": (
+                "\\n\\n## Giới hạn bổ sung sau rà soát\\n"
+                "Sai số do dùng mask pixel và cos(vĩ độ) thay vì diện tích giao "
+                "pixel–polygon CHƯA được đo từ raster gốc; "
+                "polygon CHỈ chấp nhận có điều kiện. Tương quan độ trễ thay "
+                "đổi thứ tự khi giữ các ngày SUSPECT. Không coi các bước này "
+                "đã qua nghiệm thu cuối. Xem 08_REVIEWER_NOTES.md.\\n"),
+        }
+        for fname, note in appendices.items():
+            p = HANDOFF / fname
+            if p.exists():
+                p.write_text(p.read_text(encoding="utf-8") + note, encoding="utf-8")
+
     print("  Đã sinh 7 tài liệu bàn giao:")
     for doc in sorted(HANDOFF.glob("0*.md")):
         print(f"    → {doc.name} ({doc.stat().st_size} bytes)")
