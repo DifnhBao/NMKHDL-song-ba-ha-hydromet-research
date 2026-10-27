@@ -6,8 +6,8 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 ROOT=Path(__file__).resolve().parent.parent
-HYDRO=ROOT/"handoff_writer/selected_data/hydrology_clean.csv"
-MONTHS=ROOT/"handoff_writer/selected_data/hydromet_monthly.csv"
+HYDRO=(ROOT/"data/processed/hydrology_clean.csv" if (ROOT/"data/processed/hydrology_clean.csv").exists() else ROOT/"handoff_writer/selected_data/hydrology_clean.csv")
+MONTHS=(ROOT/"data/processed/hydromet_monthly.csv" if (ROOT/"data/processed/hydromet_monthly.csv").exists() else ROOT/"handoff_writer/selected_data/hydromet_monthly.csv")
 OUT=ROOT/"handoff_writer/tables/T08_alternative_suspect_sensitivity.csv"
 def pearson(x,y):
     x=np.asarray(x,dtype=float);y=np.asarray(y,dtype=float)
