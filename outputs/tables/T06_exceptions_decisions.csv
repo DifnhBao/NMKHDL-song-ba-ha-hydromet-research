@@ -21,8 +21,8 @@
 2023-01-21,downstream_level_m,0,SUSPECT,Mực nước hạ lưu bằng 0,Giữ nguyên; đánh dấu để kiểm tra độ nhạy
 2023-05-31,downstream_level_m,0,SUSPECT,Mực nước hạ lưu bằng 0,Giữ nguyên; đánh dấu để kiểm tra độ nhạy
 2024-09-09,downstream_level_m,0,SUSPECT,Mực nước hạ lưu bằng 0,Giữ nguyên; đánh dấu để kiểm tra độ nhạy
-2023-02-19,"upstream_level_m, downstream_level_m","up=37.2, down=103.91",INVALID_CONFIRMED,Mực nước thượng lưu nhỏ hơn hạ lưu — nghi đảo cột,Không sử dụng giá trị sai trong phép tính chính; giữ nguyên gốc
-2024-04-09,"upstream_level_m, downstream_level_m","up=37.2, down=103.72",INVALID_CONFIRMED,Mực nước thượng lưu nhỏ hơn hạ lưu — nghi đảo cột,Không sử dụng giá trị sai trong phép tính chính; giữ nguyên gốc
+2023-02-19,"upstream_level_m, downstream_level_m","up=37.2, down=103.91",SUSPECT,"Mực nước thượng lưu nhỏ hơn hạ lưu — nghi đảo cột, chưa có xác minh nguồn độc lập",Giữ nguyên; đánh dấu để kiểm tra độ nhạy
+2024-04-09,"upstream_level_m, downstream_level_m","up=37.2, down=103.72",SUSPECT,"Mực nước thượng lưu nhỏ hơn hạ lưu — nghi đảo cột, chưa có xác minh nguồn độc lập",Giữ nguyên; đánh dấu để kiểm tra độ nhạy
 2024-02-03,max_power_mw,707.0,INVALID_CONFIRMED,Công suất 707.0 MW vượt thiết kế 220 MW,Không sử dụng giá trị sai trong phép tính chính; giữ nguyên gốc
 2023-01-21,max_power_mw,0,SUSPECT,Công suất bằng 0,Giữ nguyên; đánh dấu để kiểm tra độ nhạy
 2023-08-06,max_power_mw,0,SUSPECT,Công suất bằng 0,Giữ nguyên; đánh dấu để kiểm tra độ nhạy

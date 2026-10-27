@@ -28,8 +28,8 @@
   chịu điều tiết của các hồ thượng nguồn (An Khê, Ka Nak, Sông Ba Hạ).
 - Định nghĩa chính xác của trường `inflow_m3s` chưa được xác minh từ tài liệu
   công trình; có thể là lưu lượng vào hồ hoặc tổng lượng qua nhà máy.
-- 32 bản ghi SUSPECT và
-  3 bản ghi INVALID_CONFIRMED.
+- 34 bản ghi SUSPECT và
+  1 bản ghi INVALID_CONFIRMED.
   Hai ngày 19–20/11/2025 có giá trị 12.455 m³/s chưa được xác minh độc lập.
 - Mực nước thượng lưu có lỗi cảm biến/nhập liệu (0 m; 37–38 m; đảo cột) —
   đã loại khỏi phép tính nhưng làm giảm số ngày hợp lệ.
@@ -45,9 +45,6 @@
 - Tọa độ đập lấy từ OpenStreetMap (nguồn cộng đồng), đã đối chiếu với vị trí
   polygon nhưng chưa khảo sát thực địa.
 - Trạm đo mưa/khí tượng không nằm trong lưu vực; toàn bộ là trung bình không gian.
-
-- Giá trị mưa là xấp xỉ trung bình theo mask pixel và cos(vĩ độ), không tính diện tích giao riêng của pixel biên với polygon.
-- Trường hợp giữ cả lưu lượng SUSPECT, lag 0 = 0,541 và lag 1 = 0,484 (so với 0,586 và 0,615 khi loại SUSPECT). Kết quả về độ trễ không bền vững theo cách xử lý ngoại lệ.
 
 ## 5. Giới hạn phương pháp
 
@@ -70,4 +67,8 @@
 | Giá trị 12.455 m³/s ngày 19–20/11/2025 | Chưa đối chiếu được nguồn độc lập |
 | Ngày 21/01/2023 có lưu lượng 0 nhưng sản lượng điện dương | Đã gắn cờ SUSPECT |
 | Sai lệch mưa tháng vs tổng ngày | Đã định lượng, chưa hiệu chỉnh |
-| Phê duyệt GATE 2 | APPROVED (Người giám sát dự án (xác nhận trực tiếp trong phiên làm việc), 2026-10-27) |
+| Phê duyệt GATE 2 | CONDITIONAL_ACCEPTED — không phải nghiệm thu cuối |
+
+
+## Giới hạn nghiệm thu cập nhật
+Polygon và phương pháp mưa CHIRPS đã được trưởng nhóm chấp nhận có điều kiện; chênh lệch tương đối tối đa khi kiểm tra fractional-area là 1.3952%. Sai khác 377/379 pixel giữa hai lần trích xuất chưa truy nguyên đầy đủ. Kết quả lag 0/lag 1 không bền vững trước cách xử lý SUSPECT.

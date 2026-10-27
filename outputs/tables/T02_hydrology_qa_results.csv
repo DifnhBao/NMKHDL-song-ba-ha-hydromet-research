@@ -1,7 +1,7 @@
 ﻿variable,label,unit,total_days,VALID,SUSPECT,MISSING,INVALID_CONFIRMED,CORRECTED,valid_pct,missing_pct,n_zero,min,max
 inflow_m3s,Lưu lượng về hồ,m³/s,1096,1092,4,0,0,0,99.64,0.0,1,0.0,12455.0
-upstream_level_m,Mực nước thượng lưu,m,1096,1084,10,0,2,0,98.91,0.0,1,0.0,140.3
-downstream_level_m,Mực nước hạ lưu,m,1096,1091,3,0,2,0,99.54,0.0,3,0.0,103.91
+upstream_level_m,Mực nước thượng lưu,m,1096,1084,12,0,0,0,98.91,0.0,1,0.0,140.3
+downstream_level_m,Mực nước hạ lưu,m,1096,1091,5,0,0,0,99.54,0.0,3,0.0,103.91
 release_m3s,Lưu lượng xả,m³/s,1096,1096,0,0,0,0,100.0,0.0,893,0.0,11495.0
 daily_energy_kwh,Sản lượng điện ngày,kWh,1096,1096,0,0,0,0,100.0,0.0,10,0.0,5401855.0
 max_power_mw,Công suất cực đại,MW,1096,1091,4,0,1,0,99.54,0.0,4,0.0,707.0

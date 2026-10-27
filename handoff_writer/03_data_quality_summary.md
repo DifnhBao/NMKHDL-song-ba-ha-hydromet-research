@@ -10,8 +10,8 @@
 | variable | label | unit | total_days | VALID | SUSPECT | MISSING | INVALID_CONFIRMED | CORRECTED | valid_pct | missing_pct | n_zero | min | max |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | inflow_m3s | Lưu lượng về hồ | m³/s | 1096 | 1092 | 4 | 0 | 0 | 0 | 99,64 | 0,00 | 1 | 0,00 | 12.455,00 |
-| upstream_level_m | Mực nước thượng lưu | m | 1096 | 1084 | 10 | 0 | 2 | 0 | 98,91 | 0,00 | 1 | 0,00 | 140,30 |
-| downstream_level_m | Mực nước hạ lưu | m | 1096 | 1091 | 3 | 0 | 2 | 0 | 99,54 | 0,00 | 3 | 0,00 | 103,91 |
+| upstream_level_m | Mực nước thượng lưu | m | 1096 | 1084 | 12 | 0 | 0 | 0 | 98,91 | 0,00 | 1 | 0,00 | 140,30 |
+| downstream_level_m | Mực nước hạ lưu | m | 1096 | 1091 | 5 | 0 | 0 | 0 | 99,54 | 0,00 | 3 | 0,00 | 103,91 |
 | release_m3s | Lưu lượng xả | m³/s | 1096 | 1096 | 0 | 0 | 0 | 0 | 100,00 | 0,00 | 893 | 0,00 | 11.495,00 |
 | daily_energy_kwh | Sản lượng điện ngày | kWh | 1096 | 1096 | 0 | 0 | 0 | 0 | 100,00 | 0,00 | 10 | 0,00 | 5.401.855,00 |
 | max_power_mw | Công suất cực đại | MW | 1096 | 1091 | 4 | 0 | 1 | 0 | 99,54 | 0,00 | 4 | 0,00 | 707,00 |
@@ -26,22 +26,21 @@
 | max_power_mw | INVALID_CONFIRMED | 1 |
 | max_power_mw | SUSPECT | 4 |
 | upstream_level_m | SUSPECT | 19 |
-| upstream_level_m, downstream_level_m | INVALID_CONFIRMED | 2 |
+| upstream_level_m, downstream_level_m | SUSPECT | 2 |
 
 Tổng số bản ghi ngoại lệ: **35**. Phân bố theo biến:
 downstream_level_m (4), inflow_m3s (4), inflow_m3s, upstream_level_m (1), max_power_mw (5), upstream_level_m (19), upstream_level_m, downstream_level_m (2).
 
-- `SUSPECT`: 32 bản ghi — giữ nguyên giá trị, đánh dấu
-  để kiểm tra độ nhạy, không loại khỏi phân tích chính.
-- `INVALID_CONFIRMED`: 3 bản ghi — không dùng
+- `SUSPECT`: 34 lượt ngoại lệ — bảo toàn giá trị nguồn;
+  loại khỏi phép tính trung bình tháng chính của biến tương ứng nếu chưa được xác minh,
+  đồng thời giữ kịch bản bao gồm SUSPECT để kiểm tra độ nhạy.
+- `INVALID_CONFIRMED`: 1 bản ghi — không dùng
   trong phép tính chính, giữ nguyên bản gốc.
 
 ### 1.3. Các ngoại lệ quan trọng
 
 | Ngày | Biến | Giá trị | Cờ | Lý do |
 |---|---|---|---|---|
-| 2023-02-19 | upstream_level_m, downstream_level_m | up=37.2, down=103.91 | INVALID_CONFIRMED | Mực nước thượng lưu nhỏ hơn hạ lưu — nghi đảo cột |
-| 2024-04-09 | upstream_level_m, downstream_level_m | up=37.2, down=103.72 | INVALID_CONFIRMED | Mực nước thượng lưu nhỏ hơn hạ lưu — nghi đảo cột |
 | 2024-02-03 | max_power_mw | 707.0 | INVALID_CONFIRMED | Công suất 707.0 MW vượt thiết kế 220 MW |
 | 2025-11-19 | inflow_m3s | 12455.0 | SUSPECT | Lưu lượng cực lớn 12455.0 m³/s — cần kiểm tra định nghĩa và nguồn; không loại bỏ chỉ vì giá trị cao. Có thể liên quan sự kiện lũ lớn tháng 11/2025 |
 | 2025-11-20 | inflow_m3s | 12455.0 | SUSPECT | Lưu lượng cực lớn 12455.0 m³/s — cần kiểm tra định nghĩa và nguồn; không loại bỏ chỉ vì giá trị cao. Có thể liên quan sự kiện lũ lớn tháng 11/2025 |
@@ -110,7 +109,7 @@ downstream_level_m (4), inflow_m3s (4), inflow_m3s, upstream_level_m (1), max_po
 | Đập trong polygon | True |
 | Nhà máy trong polygon | True |
 | Hình học hợp lệ | True |
-| Trạng thái | APPROVED (Người giám sát dự án (xác nhận trực tiếp trong phiên làm việc), 2026-10-27) |
+| Trạng thái | CONDITIONAL_ACCEPTED — không phải nghiệm thu cuối |
 
 ## 5. Ảnh hưởng đến độ tin cậy
 
