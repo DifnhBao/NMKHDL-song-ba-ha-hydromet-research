@@ -113,7 +113,8 @@ def check_gate2_approval():
         return False, f"{APPROVAL_FILE} chưa có \"approved\": true"
     if not data.get("approved_by") or not data.get("approved_at"):
         return False, f"{APPROVAL_FILE} thiếu approved_by/approved_at"
-    return True, f"Đã phê duyệt bởi {data['approved_by']} lúc {data['approved_at']}"
+    scope = data.get("approval_status", "UNKNOWN")
+    return True, f"Được phép dùng polygon (trạng thái {scope}); {data['approved_by']} lúc {data['approved_at']}. Không đồng nghĩa nghiệm thu cuối."
 
 
 def run_script(script_name, desc):
