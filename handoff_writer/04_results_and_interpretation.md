@@ -130,8 +130,10 @@
 
 ### Nhận định
 
-- Có liên hệ dương, mức trung bình đến khá, giữa mưa tháng và lưu lượng về hồ;
-  mối liên hệ có ý nghĩa thống kê ở mức α = 0,05 cho cả lag 0 và lag 1.
+- Có liên hệ thống kê dương ở quy mô tháng giữa mưa và lưu lượng công bố.
+  Các p-value trong T05 là kiểm định tương quan thông thường, **chưa hiệu chỉnh
+  tự tương quan chuỗi thời gian, tính mùa hay nhiều phép thử**; không dùng riêng
+  chúng làm bằng chứng về nhân quả hoặc thời gian trễ thủy văn.
 - Lag 1 có hệ số cao hơn lag 0, nhưng **không đủ căn cứ** để kết luận đó là thời
   gian trễ thủy văn thực; ba năm dữ liệu và tính mùa mạnh có thể tạo tương quan giả.
 - Loại tháng chứa ngày SUSPECT làm Pearson lag 0 giảm

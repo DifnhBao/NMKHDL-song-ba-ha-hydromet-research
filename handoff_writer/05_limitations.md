@@ -28,11 +28,11 @@
   chịu điều tiết của các hồ thượng nguồn (An Khê, Ka Nak, Sông Ba Hạ).
 - Định nghĩa chính xác của trường `inflow_m3s` chưa được xác minh từ tài liệu
   công trình; có thể là lưu lượng vào hồ hoặc tổng lượng qua nhà máy.
-- 34 bản ghi SUSPECT và
-  1 bản ghi INVALID_CONFIRMED.
+- 34 lượt ngoại lệ SUSPECT (có thể nhiều lý do trên cùng ngày/biến) và
+  1 lượt ngoại lệ INVALID_CONFIRMED.
   Hai ngày 19–20/11/2025 có giá trị 12.455 m³/s chưa được xác minh độc lập.
-- Mực nước thượng lưu có lỗi cảm biến/nhập liệu (0 m; 37–38 m; đảo cột) —
-  đã loại khỏi phép tính nhưng làm giảm số ngày hợp lệ.
+- Mực nước thượng lưu có các giá trị bất thường (0 m; 37–38 m; nghi đảo cột),
+  được gắn SUSPECT và loại khỏi thống kê chính; nguyên nhân chưa xác minh độc lập.
 - Trường `release_m3s` (lưu lượng xả) bằng 0 trong **893/1096 ngày**
   — bất thường về mặt vận hành; biến này chỉ dùng bổ trợ và chưa được xác minh
   định nghĩa, không dùng trong phân tích chính.

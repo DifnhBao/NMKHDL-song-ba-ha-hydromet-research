@@ -1,6 +1,6 @@
 ﻿variable,source,type,spatial_resolution,temporal_resolution,period,notes
 Lưu lượng nước về hồ (m³/s),Website Sông Ba Hạ (sbh.vn),Số liệu công trình,Điểm (tại đập),Ngày,2023-01 – 2025-12,Chưa xác minh ý nghĩa thời gian (trung bình ngày vs tức thời)
-Mực nước thượng/hạ lưu (m),Website Sông Ba Hạ (sbh.vn),Số liệu công trình,Điểm,Ngày,2023-01 – 2025-12,Một số ngày nghi đảo cột; đã gắn cờ INVALID_CONFIRMED
-Lượng mưa lưu vực (mm),CHIRPS v3.0 Final monthly,Vệ tinh kết hợp quan trắc,~0.05° (~5 km),"Tháng (P0), Ngày rnl (P1)",2023-01 – 2025-12,Mưa ngày phân rã từ tổng 5 ngày bằng ERA5; trung bình có trọng số diện tích trên polygon lưu vực
+Mực nước thượng/hạ lưu (m),Website Sông Ba Hạ (sbh.vn),Số liệu công trình,Điểm,Ngày,2023-01 – 2025-12,"Một số ngày nghi đảo cột; đánh dấu SUSPECT, chưa xác minh độc lập"
+Lượng mưa lưu vực (mm),CHIRPS v3.0 Final monthly,Vệ tinh kết hợp quan trắc,~0.05° (~5 km),"Tháng (P0), Ngày rnl (P1)",2023-01 – 2025-12,"Mưa ngày phân rã từ tổng 5 ngày bằng ERA5; trung bình xấp xỉ pixel-mask + cos(vĩ độ); chưa tính diện tích giao pixel biên, đã kiểm tra độ nhạy 36 tháng"
 Nhiệt độ không khí 2m (°C),ERA5-Land via Open-Meteo Archive API (mean of daily means),Tái phân tích,~0.1° (~9 km),"Tháng (P0), Ngày (P1)",2023-01 – 2025-12,Trạng thái dữ liệu: OK
 Ranh giới lưu vực,HydroBASINS v1c (HydroSHEDS/WWF),Dữ liệu địa lý toàn cầu,~15 arc-second,Tĩnh,—,Diện tích tham khảo 11.115 km²; cửa ra theo OSM way/480785944

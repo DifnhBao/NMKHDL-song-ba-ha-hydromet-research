@@ -34,6 +34,7 @@ Ghi chú:
 | T05 | `tables/T05_correlation_results.csv` | Tương quan mưa – dòng chảy (lag, mùa, tercile) | — | Tính từ bảng tháng | 07 |
 | T06 | `tables/T06_exceptions_decisions.csv` | Danh sách ngoại lệ và quyết định xử lý | — | Sông Ba Hạ | 06 |
 | T07 | `tables/T07_sensitivity.csv` | Độ nhạy khi loại tháng chứa ngày SUSPECT | — | Tính từ bảng tháng | 07 |
+| T08 | `tables/T08_alternative_suspect_sensitivity.csv` | Độ nhạy lưu lượng khi giữ cả bốn ngày SUSPECT so với VALID_ONLY | — | Từ dữ liệu ngày và tháng | 10 |
 
 ## 3. Dữ liệu chọn lọc
 

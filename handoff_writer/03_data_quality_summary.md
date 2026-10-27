@@ -46,10 +46,12 @@ downstream_level_m (4), inflow_m3s (4), inflow_m3s, upstream_level_m (1), max_po
 | 2025-11-20 | inflow_m3s | 12455.0 | SUSPECT | Lưu lượng cực lớn 12455.0 m³/s — cần kiểm tra định nghĩa và nguồn; không loại bỏ chỉ vì giá trị cao. Có thể liên quan sự kiện lũ lớn tháng 11/2025 |
 
 - Hai ngày **19–20/11/2025** có lưu lượng về hồ 12.455 m³/s — giá trị cực lớn,
-  được đánh dấu SUSPECT nhưng **không loại bỏ** vì có thể liên quan đợt lũ lớn.
-  Ảnh hưởng được kiểm tra bằng phân tích độ nhạy (T07).
-- Mực nước thượng lưu có các ngày 37,2–38,6 m (dưới mực nước chết) và một số
-  ngày đảo cột thượng/hạ lưu — đã gắn cờ, không dùng giá trị sai trong phép tính.
+  được giữ nguyên trong dữ liệu nguồn và đánh dấu SUSPECT; không dùng trong
+  trung bình tháng chính, nhưng đưa vào kịch bản độ nhạy T08. Kiểm tra loại
+  toàn bộ tháng có SUSPECT nằm tại T07. Chưa xác minh cực trị từ nguồn độc lập.
+- Mực nước thượng lưu có các ngày 37,2–38,6 m (bất thường) và một số
+  ngày nghi đảo cột thượng/hạ lưu — đã gắn cờ SUSPECT, loại khỏi thống kê chính
+  nhưng chưa xác nhận nguyên nhân hay tự sửa giá trị nguồn.
 
 ### 1.4. Độ phủ theo tháng
 
@@ -115,7 +117,8 @@ downstream_level_m (4), inflow_m3s (4), inflow_m3s, upstream_level_m (1), max_po
 
 - Các ngày SUSPECT tập trung ở tháng cực đoan (01/2023, 11/2025) nên ảnh hưởng
   trực tiếp đến tương quan RQ3 — đã định lượng bằng T07.
-- Sai lệch diện tích lưu vực 0,41% làm sai lệch
-  nhỏ lượng mưa trung bình lưu vực; không làm thay đổi kết luận định tính.
+- Sai lệch diện tích lưu vực 0,41% là phép kiểm tra diện tích,
+  **không tự nó đo được sai số lượng mưa**. Độ nhạy của phương pháp tính mưa
+  được đo riêng trên 36 tháng (xem `rainfall_spatial_sensitivity.csv`).
 - Chuỗi mưa ngày là sản phẩm phân rã, chỉ dùng bổ trợ; phân tích chính dùng
   bảng tháng.
