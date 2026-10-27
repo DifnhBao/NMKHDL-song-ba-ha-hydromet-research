@@ -1,6 +1,6 @@
 {
   "approved": true,
-  "approved_by": "Người giám sát dự án (xác nhận trực tiếp trong phiên làm việc)",
+  "approved_by": "Trưởng nhóm — xác nhận có điều kiện trong cuộc trò chuyện ngày 27/10/2026",
   "approved_at": "2026-10-27",
   "scope": "GATE 2 — polygon lưu vực sông Ba đến tuyến đập Sông Ba Hạ",
   "evidence": [
@@ -18,5 +18,12 @@
     "powerhouse_inside_polygon": true,
     "geometry_valid": true
   },
-  "note": "Polygon được duyệt để dùng cho GATE 3+. Kênh tải CHIRPS qua FTP (ftp.chc.ucsb.edu, cùng sản phẩm CHIRPS v3.0 Final) và kênh nhiệt độ qua Open-Meteo (models=era5_land, cùng sản phẩm ERA5-Land) cũng đã được chấp thuận và phải ghi rõ trong tài liệu."
+  "note": "Theo quyết định mới của trưởng nhóm: GATE 2 polygon chỉ được chấp nhận có điều kiện. Đang chờ kiểm tra sai số phương pháp mưa; các nội dung khoa học khác chưa được xác nhận.",
+  "approval_status": "CONDITIONAL",
+  "approval_scope": "Chỉ chấp nhận polygon hiện tại làm đại diện xấp xỉ cho khu vực nghiên cứu; không xác nhận địa hình chính xác đến tuyến đập",
+  "conditions": [
+    "Phải công bố sai lệch diện tích 0.41%, nguồn vị trí đập OpenStreetMap và giới hạn tiểu lưu vực outlet",
+    "Chưa chấp thuận phương pháp tính mưa pixel-center/cos(latitude) làm kết quả cuối; cần định lượng sai lệch với fractional pixel overlap trước khi quyết định",
+    "Không coi việc phê duyệt polygon có điều kiện là nghiệm thu cuối toàn đề tài"
+  ]
 }
