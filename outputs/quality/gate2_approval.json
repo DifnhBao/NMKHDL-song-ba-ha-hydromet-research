@@ -18,12 +18,12 @@
     "powerhouse_inside_polygon": true,
     "geometry_valid": true
   },
-  "note": "Theo quyết định mới của trưởng nhóm: GATE 2 polygon chỉ được chấp nhận có điều kiện. Đang chờ kiểm tra sai số phương pháp mưa; các nội dung khoa học khác chưa được xác nhận.",
+  "note": "GATE 2 polygon chỉ được chấp nhận có điều kiện. Độ nhạy phương pháp mưa CHIRPS đã được định lượng và trưởng nhóm đã chấp nhận phương pháp xấp xỉ có điều kiện; chưa phê duyệt toàn bộ nghiên cứu.",
   "approval_status": "CONDITIONAL",
   "approval_scope": "Chỉ chấp nhận polygon hiện tại làm đại diện xấp xỉ cho khu vực nghiên cứu; không xác nhận địa hình chính xác đến tuyến đập",
   "conditions": [
     "Phải công bố sai lệch diện tích 0.41%, nguồn vị trí đập OpenStreetMap và giới hạn tiểu lưu vực outlet",
-    "Chưa chấp thuận phương pháp tính mưa pixel-center/cos(latitude) làm kết quả cuối; cần định lượng sai lệch với fractional pixel overlap trước khi quyết định",
+    "Phương pháp tính mưa pixel-center/cos(latitude) được chấp nhận có điều kiện cho tiểu luận sau kiểm tra sai số 36 tháng; khác biệt 377/379 pixel chưa truy nguyên đầy đủ",
     "Không coi việc phê duyệt polygon có điều kiện là nghiệm thu cuối toàn đề tài"
   ]
 }
