@@ -18,14 +18,13 @@
 
 ## 3. Phương pháp tính mưa trung bình lưu vực
 
-Sử dụng trung bình có trọng số diện tích:
+Sử dụng xấp xỉ trung bình diện tích theo pixel được chọn:
 
 ```
-P_t = Σ(A_i × P_i,t) / Σ(A_i)
+P_t ≈ Σ(cos(lat_i) × P_i,t) / Σ(cos(lat_i))
 ```
 
-Trong đó A_i là diện tích phần ô raster giao với polygon lưu vực.
-Trọng số theo vĩ độ được áp dụng vì diện tích ô 0,05° tỷ lệ với cos(vĩ độ).
+Mask nhị phân chỉ lấy các pixel được lựa chọn theo tâm ô (mặc định của rasterio.mask). Trọng số cos(vĩ độ) xấp xỉ diện tích ô đầy đủ. Chưa tính trọng số theo phần diện tích giao của pixel biên với polygon, vì vậy phép tính là **xấp xỉ** so với V1.1.
 Pixel ngoài polygon hoặc có giá trị nodata (-9999) bị loại, không thay bằng 0.
 
 ## 4. Lưu ý khoa học
