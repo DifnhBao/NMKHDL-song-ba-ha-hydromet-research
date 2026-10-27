@@ -74,8 +74,9 @@ Bản đồ dùng để nghiệm thu GATE 2, không dùng để đọc giá tr�
 
 ## 9. Trạng thái phê duyệt
 
-- `gate2_status` = APPROVED (Người giám sát dự án (xác nhận trực tiếp trong phiên làm việc), 2026-10-27)
-- Người giám sát phê duyệt bằng `outputs/quality/gate2_approval.json`.
+- **CHẤP NHẬN CÓ ĐIỀU KIỆN** theo quyết định của trưởng nhóm ngày 27/10/2026; sử dụng polygon như đại diện lưu vực xấp xỉ cho nghiên cứu.
+- Kết quả hình học/diện tích nêu trên không chứng minh ranh giới khớp hoàn toàn tuyến đập; nguồn tọa độ OSM là dữ liệu cộng đồng.
+- Việc phê duyệt polygon **không phải** nghiệm thu cuối phương pháp tính mưa hoặc toàn đề tài. Xem `docs/OWNER_DECISIONS_2026-10-27.md` và `outputs/quality/gate2_approval.json`.
 
 ## 10. Định dạng đầu ra
 
