@@ -331,6 +331,7 @@ def qa_per_variable(df):
         # 2024-09-09: Mực nước bất thường
         if d_str == "2024-09-09":
             if r["upstream_level_m"] < DEAD_POOL_M - 50:
+                df.loc[row.index[0], "upstream_level_quality"] = "SUSPECT"
                 exceptions.append({
                     "date": d, "variable": "upstream_level_m",
                     "value": r["upstream_level_m"], "flag": "SUSPECT",
@@ -340,6 +341,10 @@ def qa_per_variable(df):
 
         # 2025-11-19 và 2025-11-20: Lưu lượng rất lớn
         if d_str in ["2025-11-19", "2025-11-20"]:
+            # V1.1 §6: SUSPECT phải được gắn vào chính biến, không chỉ ghi vào
+            # danh sách ngoại lệ — nếu không, giá trị vẫn bị coi là VALID khi
+            # tổng hợp và không loại được khỏi phân tích chính/độ nhạy.
+            df.loc[row.index[0], "inflow_quality"] = "SUSPECT"
             exceptions.append({
                 "date": d, "variable": "inflow_m3s",
                 "value": r["inflow_m3s"], "flag": "SUSPECT",
@@ -538,14 +543,17 @@ def main():
     # 3. Kiểm tra hợp lý và gắn cờ
     print("\n[3/6] Kiểm tra hợp lý và gắn cờ QA...")
     df, exceptions = qa_per_variable(df)
+
+    # 4. Kiểm tra sản lượng điện (phải chạy TRƯỚC khi đóng gói exceptions_df,
+    #    nếu không các ngoại lệ sản lượng bị mất khỏi hydrology_exceptions.csv)
+    print("\n[4/6] Kiểm tra sản lượng điện...")
+    energy_issues = check_energy_consistency(df, exceptions)
+
     exceptions_df = pd.DataFrame(exceptions)
     if len(exceptions_df) > 0:
         exceptions_df["date"] = exceptions_df["date"].astype(str)
     print(f"  Tổng ngoại lệ phát hiện: {len(exceptions_df)}")
 
-    # 4. Kiểm tra sản lượng điện
-    print("\n[4/6] Kiểm tra sản lượng điện...")
-    energy_issues = check_energy_consistency(df, exceptions)
     if energy_issues:
         print(f"  ⚠️  {len(energy_issues)} tháng có sai lệch sản lượng")
     else:

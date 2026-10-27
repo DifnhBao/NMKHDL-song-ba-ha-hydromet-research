@@ -175,21 +175,24 @@ def build_monthly_table(daily_df, rain_monthly, temp_monthly, hydro):
 
         # Mưa tháng — ưu tiên sản phẩm mưa tháng CHIRPS
         rainfall_total = np.nan
-        rainfall_valid_days = 0
+        rainfall_valid_days = int(grp["rainfall_mm"].notna().sum())
+        rainfall_daily_sum = grp["rainfall_mm"].sum(min_count=1)
+        rainfall_source = "không có"
         if rain_monthly is not None:
             rrow = rain_monthly[rain_monthly["year_month"] == ym]
             if len(rrow) > 0 and pd.notna(rrow.iloc[0]["rainfall_mm"]):
                 rainfall_total = rrow.iloc[0]["rainfall_mm"]
-                rainfall_valid_days = n_days  # Sản phẩm tháng bao quát toàn tháng
+                rainfall_source = str(rrow.iloc[0].get("source", "CHIRPS monthly"))
 
         # Nhiệt độ tháng — ưu tiên sản phẩm tháng ERA5-Land
         temp_mean = np.nan
-        temp_valid_days = 0
+        temp_valid_days = int(grp["temperature_c"].notna().sum())
+        temp_source = "không có"
         if temp_monthly is not None:
             trow = temp_monthly[temp_monthly["year_month"] == ym]
             if len(trow) > 0 and pd.notna(trow.iloc[0]["temperature_c"]):
                 temp_mean = trow.iloc[0]["temperature_c"]
-                temp_valid_days = n_days
+                temp_source = str(trow.iloc[0].get("source", "ERA5-Land monthly"))
 
         # Quality status
         flags = []
@@ -197,19 +200,31 @@ def build_monthly_table(daily_df, rain_monthly, temp_monthly, hydro):
             flags.append("LOW_COVERAGE")
         if np.isnan(rainfall_total):
             flags.append("NO_RAINFALL")
+        elif rainfall_valid_days < n_days:
+            flags.append("RAINFALL_MONTHLY_ONLY")
+        if (pd.notna(rainfall_total) and pd.notna(rainfall_daily_sum)
+                and rainfall_total > 0
+                and abs(rainfall_daily_sum - rainfall_total) / rainfall_total > 0.10):
+            flags.append("RAINFALL_DAILY_MISMATCH")
         if np.isnan(temp_mean):
             flags.append("NO_TEMPERATURE")
 
         records.append({
             "year_month": ym,
             "rainfall_total_mm": round(rainfall_total, 2) if pd.notna(rainfall_total) else np.nan,
+            "rainfall_daily_sum_mm": (round(rainfall_daily_sum, 2)
+                                      if pd.notna(rainfall_daily_sum) else np.nan),
             "temperature_mean_c": round(temp_mean, 2) if pd.notna(temp_mean) else np.nan,
             "inflow_mean_m3s": round(inflow_mean, 2) if pd.notna(inflow_mean) else np.nan,
             "upstream_level_mean_m": round(level_mean, 2) if pd.notna(level_mean) else np.nan,
             "rainfall_valid_days": rainfall_valid_days,
+            "rainfall_coverage_pct": round(rainfall_valid_days / n_days * 100, 1) if n_days else np.nan,
             "temperature_valid_days": temp_valid_days,
+            "temperature_coverage_pct": round(temp_valid_days / n_days * 100, 1) if n_days else np.nan,
             "inflow_valid_days": inflow_valid_days,
             "inflow_coverage_pct": round(inflow_coverage * 100, 1),
+            "rainfall_source": rainfall_source,
+            "temperature_source": temp_source,
             "quality_status": "|".join(flags) if flags else "OK",
         })
 
@@ -268,11 +283,88 @@ def build_integration_qa(daily_df, monthly_df):
         "status": "OK" if inflow_zero_missing == 0 else "CHECK"
     })
 
+    # Số ngày có dữ liệu mưa / nhiệt độ thực tế
+    rain_valid = int(df_d["rainfall_mm"].notna().sum())
+    temp_valid = int(df_d["temperature_c"].notna().sum())
+    records.append({
+        "check": "rainfall_daily_valid_days",
+        "expected": 1096,
+        "actual": rain_valid,
+        "status": "OK" if rain_valid == 1096 else "FAIL"
+    })
+    records.append({
+        "check": "temperature_daily_valid_days",
+        "expected": 1096,
+        "actual": temp_valid,
+        "status": "OK" if temp_valid == 1096 else "FAIL"
+    })
+
+    # rainfall_valid_days ở bảng tháng phải khớp số ngày mưa thực tế
+    if "rainfall_valid_days" in monthly_df.columns:
+        recorded = int(monthly_df["rainfall_valid_days"].sum())
+        records.append({
+            "check": "rainfall_valid_days_consistency",
+            "expected": rain_valid,
+            "actual": recorded,
+            "status": "OK" if recorded == rain_valid else "FAIL"
+        })
+
+    if "temperature_valid_days" in monthly_df.columns:
+        recorded = int(monthly_df["temperature_valid_days"].sum())
+        records.append({
+            "check": "temperature_valid_days_consistency",
+            "expected": temp_valid,
+            "actual": recorded,
+            "status": "OK" if recorded == temp_valid else "FAIL"
+        })
+
+    # Tổng mưa ngày trong tháng vs sản phẩm mưa tháng (V1.1 §9 Bước 6)
+    if "rainfall_daily_sum_mm" in monthly_df.columns:
+        both = monthly_df.dropna(subset=["rainfall_total_mm", "rainfall_daily_sum_mm"])
+        n_mismatch = int((
+            (both["rainfall_total_mm"] - both["rainfall_daily_sum_mm"]).abs()
+            / both["rainfall_total_mm"].replace(0, np.nan) > 0.10
+        ).sum()) if len(both) else 0
+        records.append({
+            "check": "monthly_vs_daily_rainfall_mismatch_gt10pct",
+            "expected": 0,
+            "actual": n_mismatch,
+            "status": "OK" if n_mismatch == 0 else "CHECK"
+        })
+
+    # Không được có tháng thiếu cờ chất lượng
+    empty_flag = int((monthly_df["quality_status"].astype(str).str.strip() == "").sum())
+    records.append({
+        "check": "months_without_quality_status",
+        "expected": 0,
+        "actual": empty_flag,
+        "status": "OK" if empty_flag == 0 else "FAIL"
+    })
+
     return pd.DataFrame(records)
 
 
 def write_data_dictionary():
     """Viết data_dictionary.md."""
+    rain_src = "không rõ"
+    rain_daily_src = "không rõ"
+    temp_src = "không rõ"
+    try:
+        r = pd.read_csv(PROC_DIR / "rainfall_monthly.csv", usecols=["source"])
+        rain_src = str(r["source"].dropna().iloc[0])
+    except Exception:
+        pass
+    try:
+        rd = pd.read_csv(PROC_DIR / "rainfall_daily.csv", usecols=["source"])
+        rain_daily_src = str(rd["source"].dropna().iloc[0])
+    except Exception:
+        rain_daily_src = rain_src
+    try:
+        t = pd.read_csv(PROC_DIR / "temperature_monthly.csv", usecols=["source"])
+        temp_src = str(t["source"].dropna().iloc[0])
+    except Exception:
+        pass
+
     lines = [
         "# Từ điển dữ liệu (Data Dictionary)",
         "",
@@ -281,9 +373,9 @@ def write_data_dictionary():
         "| Cột | Kiểu | Đơn vị | Mô tả |",
         "|-----|------|--------|-------|",
         "| date | YYYY-MM-DD | — | Ngày lịch |",
-        "| rainfall_mm | float | mm | Lượng mưa trung bình lưu vực (CHIRPS v3 daily rnl) |",
-        "| temperature_c | float | °C | Nhiệt độ 2m trung bình lưu vực (ERA5-Land daily mean UTC) |",
-        "| inflow_m3s | float | m³/s | Lưu lượng nước về hồ (website Sông Ba Hạ) |",
+        f"| rainfall_mm | float | mm | Lượng mưa trung bình lưu vực ({rain_daily_src}) |",
+        f"| temperature_c | float | °C | Nhiệt độ 2 m trung bình lưu vực. Nguồn: {temp_src} |",
+        "| inflow_m3s | float | m³/s | Lưu lượng nước về hồ (dữ liệu vận hành Sông Ba Hạ) |",
         "| upstream_level_m | float | m | Mực nước thượng lưu |",
         "| inflow_quality | str | — | Cờ QA: VALID/SUSPECT/MISSING/INVALID_CONFIRMED/CORRECTED |",
         "| level_quality | str | — | Cờ QA mực nước |",
@@ -295,20 +387,25 @@ def write_data_dictionary():
         "| Cột | Kiểu | Đơn vị | Mô tả |",
         "|-----|------|--------|-------|",
         "| year_month | YYYY-MM | — | Tháng lịch |",
-        "| rainfall_total_mm | float | mm | Tổng lượng mưa tháng (CHIRPS v3 monthly product) |",
-        "| temperature_mean_c | float | °C | Nhiệt độ trung bình tháng (ERA5-Land monthly mean) |",
+        "| rainfall_total_mm | float | mm | Tổng lượng mưa tháng (sản phẩm mưa tháng) |",
+        "| rainfall_daily_sum_mm | float | mm | Tổng mưa ngày trong tháng (để đối chiếu, không dùng thay) |",
+        "| temperature_mean_c | float | °C | Nhiệt độ trung bình tháng |",
         "| inflow_mean_m3s | float | m³/s | Trung bình các giá trị lưu lượng ngày đủ ĐK |",
         "| upstream_level_mean_m | float | m | Trung bình mực nước thượng lưu |",
-        "| rainfall_valid_days | int | ngày | Số ngày có dữ liệu mưa |",
-        "| temperature_valid_days | int | ngày | Số ngày có dữ liệu nhiệt độ |",
+        "| rainfall_valid_days | int | ngày | Số ngày có giá trị mưa ngày hợp lệ |",
+        "| rainfall_coverage_pct | float | % | Tỷ lệ ngày có mưa ngày hợp lệ |",
+        "| temperature_valid_days | int | ngày | Số ngày có giá trị nhiệt độ hợp lệ |",
+        "| temperature_coverage_pct | float | % | Tỷ lệ ngày có nhiệt độ hợp lệ |",
         "| inflow_valid_days | int | ngày | Số ngày lưu lượng đủ ĐK (VALID/CORRECTED) |",
         "| inflow_coverage_pct | float | % | Tỷ lệ ngày lưu lượng hợp lệ |",
-        "| quality_status | str | — | Cờ: OK / LOW_COVERAGE / NO_RAINFALL / NO_TEMPERATURE |",
+        "| rainfall_source | str | — | Nguồn mưa tháng thực tế đã dùng |",
+        "| temperature_source | str | — | Nguồn nhiệt độ tháng thực tế đã dùng |",
+        "| quality_status | str | — | Cờ: OK / LOW_COVERAGE / NO_RAINFALL / RAINFALL_MONTHLY_ONLY / RAINFALL_DAILY_MISMATCH / NO_TEMPERATURE |",
         "",
         "## Quy ước",
         "",
-        "- **Mưa tháng:** Sử dụng sản phẩm mưa tháng CHIRPS v3 Final (không cộng mưa ngày).",
-        "- **Nhiệt độ tháng:** Sản phẩm ERA5-Land monthly averaged reanalysis.",
+        "- **Mưa tháng:** Sử dụng sản phẩm mưa tháng; tổng mưa ngày chỉ dùng để đối chiếu.",
+        "- **Nhiệt độ tháng:** Trung bình tháng từ nguồn ghi ở cột `temperature_source`.",
         "- **Lưu lượng tháng:** Trung bình các bản ghi ngày có trạng thái VALID hoặc CORRECTED.",
         "  Đây là trung bình các giá trị công bố, không phải lưu lượng trung bình thực đo",
         "  vì chưa xác minh ý nghĩa thời gian của bản ghi.",
@@ -371,6 +468,12 @@ def main():
     # Từ điển dữ liệu
     print("\n[5/5] Viết từ điển dữ liệu...")
     write_data_dictionary()
+
+    n_fail = int((qa_df["status"] == "FAIL").sum())
+    if n_fail > 0:
+        print(f"\n❌ GATE 4 KHÔNG ĐẠT: {n_fail} kiểm tra FAIL.")
+        print("  → Xem data/processed/integration_qa.csv")
+        return 1
 
     print("\n✅ GATE 4 hoàn thành.")
     return 0

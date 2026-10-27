@@ -28,10 +28,17 @@ try:
 except Exception:
     pass
 import warnings
+import json
+import time
+import tempfile
 import numpy as np
 import pandas as pd
 from pathlib import Path
 from datetime import date, timedelta
+
+# Giới hạn thời gian cho các yêu cầu HTTP của GDAL (/vsicurl/)
+os.environ.setdefault("GDAL_HTTP_TIMEOUT", "20")
+os.environ.setdefault("GDAL_HTTP_MAX_RETRY", "1")
 
 try:
     import rasterio
@@ -52,17 +59,55 @@ OUT_DIR.mkdir(parents=True, exist_ok=True)
 QA_DIR.mkdir(parents=True, exist_ok=True)
 
 # ── URL templates ─────────────────────────────────────────────────────
+# HTTPS (data.chc.ucsb.edu) là kênh chính; FTP (ftp.chc.ucsb.edu) là kênh
+# dự phòng của CÙNG máy chủ CHC, dùng khi HTTPS bị chặn (403 CrowdSec).
 CHIRPS_MONTHLY_URL = (
     "https://data.chc.ucsb.edu/products/CHIRPS/v3.0/monthly/global/"
     "tifs/chirps-v3.0.{year}.{month:02d}.tif"
 )
 CHIRPS_DAILY_URL = (
     "https://data.chc.ucsb.edu/products/CHIRPS/v3.0/daily/final/rnl/"
-    "{year}/chirps-v3.0.{year}.{month:02d}.{day:02d}.tif"
+    "{year}/chirps-v3.0.rnl.{year}.{month:02d}.{day:02d}.tif"
 )
+CHIRPS_MONTHLY_FTP = (
+    "/vsicurl/ftp://ftp.chc.ucsb.edu/pub/org/chc/products/CHIRPS/v3.0/"
+    "monthly/global/tifs/chirps-v3.0.{year}.{month:02d}.tif"
+)
+CHIRPS_DAILY_FTP = (
+    "/vsicurl/ftp://ftp.chc.ucsb.edu/pub/org/chc/products/CHIRPS/v3.0/"
+    "daily/final/rnl/{year}/chirps-v3.0.rnl.{year}.{month:02d}.{day:02d}.tif"
+)
+
+
+def _monthly_sources(year, month):
+    return [
+        f"/vsicurl/{CHIRPS_MONTHLY_URL.format(year=year, month=month)}",
+        CHIRPS_MONTHLY_FTP.format(year=year, month=month),
+    ]
+
+
+def _daily_sources(year, month, day):
+    return [
+        f"/vsicurl/{CHIRPS_DAILY_URL.format(year=year, month=month, day=day)}",
+        CHIRPS_DAILY_FTP.format(year=year, month=month, day=day),
+    ]
 
 START_DATE = date(2023, 1, 1)
 END_DATE = date(2025, 12, 31)
+
+
+def _gate2_status():
+    """Đọc trạng thái phê duyệt GATE 2 từ tệp phê duyệt (nếu có)."""
+    path = ROOT / "outputs" / "quality" / "gate2_approval.json"
+    if not path.exists():
+        return "chưa có tệp phê duyệt GATE 2"
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return "tệp phê duyệt GATE 2 không đọc được"
+    if data.get("approved") is True:
+        return f"đã phê duyệt bởi {data.get('approved_by', 'không rõ')}"
+    return "chưa được phê duyệt"
 
 
 def download_file(url, dest):
@@ -85,113 +130,275 @@ def download_file(url, dest):
         return False
 
 
-def area_weighted_mean(tif_path, catchment_geom):
-    """Tính lượng mưa trung bình có trọng số diện tích cho lưu vực.
+CHIRPS_NODATA = -9999
+
+# Máy chủ FTP của CHC (cùng nguồn dữ liệu với data.chc.ucsb.edu)
+FTP_HOST = "ftp.chc.ucsb.edu"
+FTP_ROOT = "/pub/org/chc/products/CHIRPS/v3.0"
+
+# Kênh tải thực tế trong lần chạy (được ghi vào tài liệu phương pháp)
+USED_CHANNEL = "HTTPS (data.chc.ucsb.edu)"
+
+
+def _weighted_mean_by_latitude(data, transform):
+    """Trung bình có trọng số diện tích thật (ô 0,05° có diện tích ∝ cos(lat)).
 
     P_t = Σ(A_i × P_i,t) / Σ(A_i)
-    Trong đó A_i là diện tích phần ô raster thuộc lưu vực.
     """
+    valid = (data != CHIRPS_NODATA) & np.isfinite(data) & (data >= 0)
+    if not valid.any():
+        return np.nan, 0
+
+    rows, cols = np.where(valid)
+    # Vĩ độ tâm ô của từng hàng
+    lats = transform.f + (rows + 0.5) * transform.e
+    weights = np.cos(np.radians(lats))
+    values = data[rows, cols].astype("float64")
+    return float(np.sum(values * weights) / np.sum(weights)), int(valid.sum())
+
+
+def area_weighted_mean(tif_path, catchment_geom):
+    """Tính lượng mưa trung bình có trọng số diện tích cho lưu vực."""
     with rasterio.open(tif_path) as src:
-        # Cắt raster theo polygon
         out_image, out_transform = rio_mask(
-            src, [mapping(catchment_geom)], crop=True, nodata=-9999
+            src, [mapping(catchment_geom)], crop=True, nodata=CHIRPS_NODATA
         )
-        data = out_image[0]  # Band 1
+        return _weighted_mean_by_latitude(out_image[0], out_transform)
 
-        # Loại nodata
-        valid_mask = (data != -9999) & (~np.isnan(data)) & (data >= 0)
 
-        if not valid_mask.any():
-            return np.nan, 0
+from concurrent.futures import ThreadPoolExecutor
 
-        # Mỗi pixel có cùng kích thước → trọng số đều cho các pixel hợp lệ
-        # (đây là xấp xỉ tốt vì CHIRPS resolution ~0.05° và lưu vực đủ lớn)
-        valid_values = data[valid_mask]
-        weighted_mean = np.mean(valid_values)
-        n_pixels = int(valid_mask.sum())
 
-        return float(weighted_mean), n_pixels
+def extract_single_month(args):
+    year, month, catchment_geom, monthly_dir = args
+    ym = f"{year}-{month:02d}"
+    fname = f"chirps-v3.0.{year}.{month:02d}.tif"
+    local_crop = monthly_dir / fname
+
+    if local_crop.exists():
+        val, n_pix = area_weighted_mean(local_crop, catchment_geom)
+        return {
+            "year_month": ym, "rainfall_mm": round(val, 2), "n_pixels": n_pix,
+            "source": "CHIRPS v3.0 Final monthly", "status": "OK"
+        }
+
+    errors = []
+    for url in _monthly_sources(year, month):
+        try:
+            with rasterio.open(url) as src:
+                out_img, out_transform = rio_mask(src, [mapping(catchment_geom)],
+                                                  crop=True, nodata=CHIRPS_NODATA)
+                val, n_pix = _weighted_mean_by_latitude(out_img[0], out_transform)
+                if not np.isnan(val):
+                    meta = src.meta.copy()
+                    meta.update({
+                        "driver": "GTiff",
+                        "height": out_img.shape[1],
+                        "width": out_img.shape[2],
+                        "transform": out_transform,
+                        "nodata": CHIRPS_NODATA,
+                    })
+                    with rasterio.open(local_crop, "w", **meta) as dst:
+                        dst.write(out_img)
+                    return {
+                        "year_month": ym, "rainfall_mm": round(val, 2), "n_pixels": n_pix,
+                        "source": "CHIRPS v3.0 Final monthly", "status": "OK",
+                        "error": "",
+                    }
+                return {
+                    "year_month": ym, "rainfall_mm": np.nan, "n_pixels": 0,
+                    "source": "CHIRPS v3.0 Final monthly", "status": "NO_DATA",
+                    "error": "",
+                }
+        except Exception as e:
+            errors.append(str(e)[:120])
+    return {
+        "year_month": ym, "rainfall_mm": np.nan, "n_pixels": 0,
+        "source": "CHIRPS v3.0 Final monthly", "status": "DOWNLOAD_FAILED",
+        "error": " | ".join(errors)[:240],
+    }
 
 
 def extract_monthly(catchment_geom):
     """Trích xuất mưa tháng CHIRPS v3 Final."""
-    print("\n  Trích xuất mưa tháng...")
-    records = []
+    print("\n  Trích xuất mưa tháng (P0)...")
     monthly_dir = RAW_CHIRPS_DIR / "monthly"
     monthly_dir.mkdir(parents=True, exist_ok=True)
 
-    for year in range(2023, 2026):
-        for month in range(1, 13):
-            ym = f"{year}-{month:02d}"
-            url = CHIRPS_MONTHLY_URL.format(year=year, month=month)
-            fname = f"chirps-v3.0.{year}.{month:02d}.tif"
-            dest = monthly_dir / fname
+    tasks = [
+        (year, month, catchment_geom, monthly_dir)
+        for year in range(2023, 2026)
+        for month in range(1, 13)
+    ]
 
-            ok = download_file(url, dest)
-            if not ok:
-                records.append({
-                    "year_month": ym, "rainfall_mm": np.nan,
-                    "n_pixels": 0, "source": "CHIRPS v3.0 Final monthly",
-                    "status": "DOWNLOAD_FAILED"
-                })
-                continue
+    with ThreadPoolExecutor(max_workers=6) as executor:
+        records = list(executor.map(extract_single_month, tasks))
 
-            rainfall_mm, n_pixels = area_weighted_mean(dest, catchment_geom)
-            records.append({
-                "year_month": ym,
-                "rainfall_mm": round(rainfall_mm, 2) if not np.isnan(rainfall_mm) else np.nan,
-                "n_pixels": n_pixels,
-                "source": "CHIRPS v3.0 Final monthly",
-                "status": "OK" if not np.isnan(rainfall_mm) else "NO_DATA"
-            })
-            print(f"    {ym}: {rainfall_mm:.1f} mm ({n_pixels} pixels)")
+    # Sắp xếp lại theo thời gian
+    records.sort(key=lambda x: x["year_month"])
+    for r in records:
+        print(f"    {r['year_month']}: {r['rainfall_mm']} mm ({r['n_pixels']} pixels)")
 
     return pd.DataFrame(records)
+
+
+def _crop_and_save(src, catchment_geom, local_crop):
+    """Cắt raster theo polygon, lưu bản cắt cục bộ, trả về (giá trị, số pixel)."""
+    out_img, out_transform = rio_mask(
+        src, [mapping(catchment_geom)], crop=True, nodata=CHIRPS_NODATA
+    )
+    val, n_pix = _weighted_mean_by_latitude(out_img[0], out_transform)
+    if np.isnan(val):
+        return np.nan, 0
+    local_crop.parent.mkdir(parents=True, exist_ok=True)
+    meta = src.meta.copy()
+    meta.update({
+        "driver": "GTiff",
+        "height": out_img.shape[1],
+        "width": out_img.shape[2],
+        "transform": out_transform,
+        "nodata": CHIRPS_NODATA,
+    })
+    with rasterio.open(local_crop, "w", **meta) as dst:
+        dst.write(out_img)
+    return val, n_pix
+
+
+def _download_via_ftp(remote_path, dest, attempts=3):
+    """Tải một tệp CHIRPS qua FTP (cùng máy chủ CHC, dùng khi HTTPS bị chặn)."""
+    from ftplib import FTP
+
+    last_err = None
+    for attempt in range(attempts):
+        try:
+            ftp = FTP(FTP_HOST, timeout=120)
+            ftp.login()
+            try:
+                with open(dest, "wb") as fh:
+                    ftp.retrbinary("RETR " + remote_path, fh.write,
+                                   blocksize=1 << 20)
+            finally:
+                try:
+                    ftp.quit()
+                except Exception:
+                    ftp.close()
+            return
+        except Exception as exc:
+            last_err = exc
+            time.sleep(2 * (attempt + 1))
+    raise RuntimeError(f"FTP thất bại sau {attempts} lần: {last_err}")
+
+
+def extract_single_day(args):
+    cur_date, catchment_geom, daily_dir, channel = args
+    d_str = cur_date.strftime("%Y-%m-%d")
+    year, month, day = cur_date.year, cur_date.month, cur_date.day
+    fname = f"chirps-v3.0.rnl.{year}.{month:02d}.{day:02d}.tif"
+    local_crop = daily_dir / str(year) / fname
+
+    if local_crop.exists():
+        val, n_pix = area_weighted_mean(local_crop, catchment_geom)
+        return {
+            "date": d_str, "rainfall_mm": round(val, 2) if not np.isnan(val) else np.nan,
+            "n_pixels": n_pix, "source": "CHIRPS v3.0 Final daily rnl",
+            "status": "OK" if not np.isnan(val) else "NO_DATA", "error": "",
+        }
+
+    if channel == "ftp":
+        # Tải cả tệp toàn cầu rồi cắt: với FTP, 1 lần RETR nhanh hơn nhiều
+        # so với hàng chục lần đọc ranged.
+        tmp = Path(tempfile.gettempdir()) / f"chirps_{d_str}.tif"
+        remote = (f"{FTP_ROOT}/daily/final/rnl/{year}/{fname}")
+        try:
+            _download_via_ftp(remote, tmp)
+            with rasterio.open(tmp) as src:
+                val, n_pix = _crop_and_save(src, catchment_geom, local_crop)
+        except Exception as exc:
+            return {
+                "date": d_str, "rainfall_mm": np.nan, "n_pixels": 0,
+                "source": "CHIRPS v3.0 Final daily rnl",
+                "status": "DOWNLOAD_FAILED", "error": str(exc)[:200],
+            }
+        finally:
+            try:
+                os.remove(tmp)
+            except OSError:
+                pass
+        if np.isnan(val):
+            return {
+                "date": d_str, "rainfall_mm": np.nan, "n_pixels": 0,
+                "source": "CHIRPS v3.0 Final daily rnl",
+                "status": "NO_DATA", "error": "",
+            }
+        return {
+            "date": d_str, "rainfall_mm": round(val, 2), "n_pixels": n_pix,
+            "source": "CHIRPS v3.0 Final daily rnl", "status": "OK", "error": "",
+        }
+
+    # Kênh HTTPS: đọc trực tiếp bằng /vsicurl
+    url = f"/vsicurl/{CHIRPS_DAILY_URL.format(year=year, month=month, day=day)}"
+    try:
+        with rasterio.open(url) as src:
+            val, n_pix = _crop_and_save(src, catchment_geom, local_crop)
+    except Exception as exc:
+        return {
+            "date": d_str, "rainfall_mm": np.nan, "n_pixels": 0,
+            "source": "CHIRPS v3.0 Final daily rnl",
+            "status": "DOWNLOAD_FAILED", "error": str(exc)[:200],
+        }
+    if np.isnan(val):
+        return {
+            "date": d_str, "rainfall_mm": np.nan, "n_pixels": 0,
+            "source": "CHIRPS v3.0 Final daily rnl",
+            "status": "NO_DATA", "error": "",
+        }
+    return {
+        "date": d_str, "rainfall_mm": round(val, 2), "n_pixels": n_pix,
+        "source": "CHIRPS v3.0 Final daily rnl", "status": "OK", "error": "",
+    }
+
+
+def _detect_channel():
+    """Chọn kênh tải: HTTPS nếu truy cập được, ngược lại FTP (cùng máy chủ CHC)."""
+    import requests
+
+    url = CHIRPS_MONTHLY_URL.format(year=2023, month=1)
+    try:
+        resp = requests.head(url, timeout=20, allow_redirects=True)
+        if resp.status_code == 200:
+            return "https", "HTTPS (data.chc.ucsb.edu)"
+    except Exception:
+        pass
+    return "ftp", "FTP (ftp.chc.ucsb.edu — cùng máy chủ CHC, HTTPS đang bị chặn)"
 
 
 def extract_daily(catchment_geom):
     """Trích xuất mưa ngày CHIRPS v3 Final daily rnl."""
     print("\n  Trích xuất mưa ngày (P1)...")
-    records = []
     daily_dir = RAW_CHIRPS_DIR / "daily"
+    daily_dir.mkdir(parents=True, exist_ok=True)
 
-    current = START_DATE
     total_days = (END_DATE - START_DATE).days + 1
+    dates = [START_DATE + timedelta(days=i) for i in range(total_days)]
+
+    channel, channel_label = _detect_channel()
+    print(f"  Kênh tải: {channel_label}")
+    global USED_CHANNEL
+    USED_CHANNEL = channel_label
+
+    tasks = [(d, catchment_geom, daily_dir, channel) for d in dates]
+    records = []
     done = 0
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        for r in executor.map(extract_single_day, tasks):
+            records.append(r)
+            done += 1
+            if done % 100 == 0 or done == total_days:
+                n_ok = sum(1 for x in records if x["status"] == "OK")
+                print(f"    Tiến độ: {done}/{total_days} ngày "
+                      f"({done/total_days*100:.0f}%), OK: {n_ok}")
 
-    while current <= END_DATE:
-        year, month, day = current.year, current.month, current.day
-        url = CHIRPS_DAILY_URL.format(year=year, month=month, day=day)
-        fname = f"chirps-v3.0.{year}.{month:02d}.{day:02d}.tif"
-        yearly_dir = daily_dir / str(year)
-        yearly_dir.mkdir(parents=True, exist_ok=True)
-        dest = yearly_dir / fname
-
-        ok = download_file(url, dest)
-        if not ok:
-            records.append({
-                "date": current.strftime("%Y-%m-%d"),
-                "rainfall_mm": np.nan,
-                "n_pixels": 0,
-                "source": "CHIRPS v3.0 Final daily rnl",
-                "status": "DOWNLOAD_FAILED"
-            })
-        else:
-            rainfall_mm, n_pixels = area_weighted_mean(dest, catchment_geom)
-            records.append({
-                "date": current.strftime("%Y-%m-%d"),
-                "rainfall_mm": round(rainfall_mm, 2) if not np.isnan(rainfall_mm) else np.nan,
-                "n_pixels": n_pixels,
-                "source": "CHIRPS v3.0 Final daily rnl",
-                "status": "OK" if not np.isnan(rainfall_mm) else "NO_DATA"
-            })
-
-        done += 1
-        if done % 30 == 0 or current == END_DATE:
-            print(f"    Tiến độ: {done}/{total_days} ngày "
-                  f"({done/total_days*100:.0f}%)")
-        current += timedelta(days=1)
-
+    records.sort(key=lambda x: x["date"])
     return pd.DataFrame(records)
 
 
@@ -214,23 +421,27 @@ def cross_check_monthly_daily(monthly_df, daily_df):
                 "year_month": ym,
                 "monthly_product_mm": monthly_val,
                 "daily_sum_mm": np.nan,
+                "n_missing_days": np.nan,
                 "diff_mm": np.nan,
                 "diff_pct": np.nan,
-                "status": "NO_DAILY_DATA"
+                "status": "NO_MONTHLY_DATA" if np.isnan(monthly_val) else "NO_DAILY_DATA"
             })
             continue
 
-        daily_sum = daily_grp["rainfall_mm"].sum()
+        daily_sum = daily_grp["rainfall_mm"].sum(min_count=1)  # NaN nếu toàn thiếu
+        n_missing = int(daily_grp["rainfall_mm"].isna().sum())
         diff = daily_sum - monthly_val
         diff_pct = (diff / monthly_val * 100) if monthly_val != 0 else np.nan
 
         records.append({
             "year_month": ym,
             "monthly_product_mm": round(monthly_val, 2),
-            "daily_sum_mm": round(daily_sum, 2),
-            "diff_mm": round(diff, 2),
-            "diff_pct": round(diff_pct, 1) if not np.isnan(diff_pct) else np.nan,
-            "status": "OK" if abs(diff_pct) < 10 else "CHECK"
+            "daily_sum_mm": round(daily_sum, 2) if pd.notna(daily_sum) else np.nan,
+            "n_missing_days": n_missing,
+            "diff_mm": round(diff, 2) if pd.notna(diff) else np.nan,
+            "diff_pct": round(diff_pct, 1) if pd.notna(diff_pct) else np.nan,
+            "status": ("NO_DAILY_DATA" if pd.isna(daily_sum)
+                       else "CHECK" if abs(diff_pct) >= 10 else "OK")
         })
 
     return pd.DataFrame(records)
@@ -246,6 +457,7 @@ def write_method(monthly_df, daily_df, qa_df):
         "- **Sản phẩm:** CHIRPS v3 Final (Climate Hazards Center, UC Santa Barbara)",
         "- **Mưa tháng:** https://data.chc.ucsb.edu/products/CHIRPS/v3.0/monthly/global/",
         "- **Mưa ngày:** https://data.chc.ucsb.edu/products/CHIRPS/v3.0/daily/final/rnl/",
+        f"- **Kênh tải thực tế:** {USED_CHANNEL}",
         "- **Loại dữ liệu:** Ước lượng mưa kết hợp vệ tinh và quan trắc",
         "- **Độ phân giải không gian:** ~0.05° (~5 km)",
         "- **Đơn vị:** mm/tháng (sản phẩm tháng), mm/ngày (sản phẩm ngày)",
@@ -254,7 +466,8 @@ def write_method(monthly_df, daily_df, qa_df):
         "",
         "- **Thời gian:** 01/2023 – 12/2025 (36 tháng)",
         "- **Không gian:** Lưu vực sông Ba đến thủy điện Sông Ba Hạ",
-        "- **Ranh giới:** song_ba_ha_catchment.geojson (đã phê duyệt GATE 2)",
+        f"- **Ranh giới:** song_ba_ha_catchment.geojson "
+        f"({_gate2_status()})",
         "",
         "## 3. Phương pháp tính mưa trung bình lưu vực",
         "",
@@ -265,9 +478,8 @@ def write_method(monthly_df, daily_df, qa_df):
         "```",
         "",
         "Trong đó A_i là diện tích phần ô raster giao với polygon lưu vực.",
-        "Trong triển khai, sử dụng rasterio.mask để cắt raster theo polygon,",
-        "sau đó lấy trung bình các pixel hợp lệ (xấp xỉ tốt vì các pixel",
-        "CHIRPS có kích thước đều và lưu vực đủ lớn).",
+        "Trọng số theo vĩ độ được áp dụng vì diện tích ô 0,05° tỷ lệ với cos(vĩ độ).",
+        "Pixel ngoài polygon hoặc có giá trị nodata (-9999) bị loại, không thay bằng 0.",
         "",
         "## 4. Lưu ý khoa học",
         "",
@@ -284,19 +496,30 @@ def write_method(monthly_df, daily_df, qa_df):
     ]
 
     if qa_df is not None and len(qa_df) > 0:
-        lines.append("| Tháng | Sản phẩm tháng (mm) | Tổng ngày (mm) | Lệch (mm) | Lệch (%) |")
-        lines.append("|-------|---------------------|----------------|-----------|----------|")
+        lines.append("| Tháng | Sản phẩm tháng (mm) | Tổng ngày (mm) | Số ngày thiếu | Lệch (mm) | Lệch (%) | Trạng thái |")
+        lines.append("|-------|---------------------|----------------|---------------|-----------|----------|------------|")
         for _, row in qa_df.iterrows():
             lines.append(
                 f"| {row['year_month']} | {row['monthly_product_mm']} | "
-                f"{row['daily_sum_mm']} | {row['diff_mm']} | {row['diff_pct']} |"
+                f"{row['daily_sum_mm']} | {row.get('n_missing_days', '')} | "
+                f"{row['diff_mm']} | {row['diff_pct']} | {row['status']} |"
             )
     else:
         lines.append("(Chưa có dữ liệu ngày để so sánh)")
 
     lines += [
         "",
-        "## 6. Đầu ra",
+        "## 6. Trạng thái dữ liệu",
+        "",
+        f"- Mưa tháng: {int((monthly_df['status'] == 'OK').sum())}/{len(monthly_df)} tháng OK.",
+        f"- Mưa ngày: {int((daily_df['status'] == 'OK').sum())}/{len(daily_df)} ngày OK; "
+        f"{int(daily_df['rainfall_mm'].isna().sum())} ngày thiếu (giữ NaN, không thay bằng 0).",
+        "",
+        "Ghi chú: mưa ngày CHIRPS v3 `rnl` được phân rã từ tổng 5 ngày bằng ERA5,",
+        "nên tổng ngày có thể lệch nhỏ so với sản phẩm tháng. Chênh lệch được báo cáo",
+        "trong `rainfall_qa.csv`, không tự động hiệu chỉnh.",
+        "",
+        "## 7. Đầu ra",
         "",
         "- `rainfall_monthly.csv`: Mưa tháng trung bình lưu vực",
         "- `rainfall_daily.csv`: Mưa ngày trung bình lưu vực (P1)",
@@ -323,7 +546,7 @@ def main():
 
     print("\n[1/5] Đọc ranh giới lưu vực...")
     catchment = gpd.read_file(CATCHMENT_PATH)
-    catchment_geom = catchment.geometry.unary_union
+    catchment_geom = catchment.geometry.union_all()
     print(f"  Bounds: {catchment.total_bounds}")
 
     # P0: Mưa tháng
@@ -332,8 +555,8 @@ def main():
     monthly_path = OUT_DIR / "rainfall_monthly.csv"
     monthly_df.to_csv(monthly_path, index=False, encoding="utf-8-sig")
     print(f"  → {monthly_path}")
-    print(f"  Tổng: {len(monthly_df)} tháng, "
-          f"OK: {(monthly_df['status']=='OK').sum()}")
+    n_ok_m = int((monthly_df["status"] == "OK").sum())
+    print(f"  Tổng: {len(monthly_df)} tháng, OK: {n_ok_m}")
 
     # P1: Mưa ngày
     print("\n[3/5] Tải và trích xuất mưa ngày (P1)...")
@@ -341,6 +564,9 @@ def main():
     daily_path = OUT_DIR / "rainfall_daily.csv"
     daily_df.to_csv(daily_path, index=False, encoding="utf-8-sig")
     print(f"  → {daily_path}")
+    n_ok_d = int((daily_df["status"] == "OK").sum())
+    n_nan_d = int(daily_df["rainfall_mm"].isna().sum())
+    print(f"  Tổng: {len(daily_df)} ngày, OK: {n_ok_d}, thiếu: {n_nan_d}")
 
     # So sánh
     print("\n[4/5] So sánh mưa tháng vs tổng ngày...")
@@ -349,12 +575,20 @@ def main():
     if len(qa_df) > 0:
         qa_df.to_csv(qa_path, index=False, encoding="utf-8-sig")
         print(f"  → {qa_path}")
-    else:
-        print("  (Bỏ qua — chưa có dữ liệu ngày)")
 
     # Phương pháp
     print("\n[5/5] Viết tài liệu phương pháp...")
     write_method(monthly_df, daily_df, qa_df)
+
+    n_bad_m = len(monthly_df) - n_ok_m
+    n_bad_d = len(daily_df) - n_ok_d
+    if n_bad_m or n_bad_d:
+        print(f"\n❌ GATE 3a KHÔNG ĐẠT: {n_bad_m} tháng và {n_bad_d} ngày "
+              "không có dữ liệu hợp lệ.")
+        print("  → Không dùng giá trị 0 thay cho dữ liệu thiếu.")
+        print("  → Xem cột `status`/`error` trong rainfall_monthly.csv và "
+              "rainfall_daily.csv.")
+        return 1
 
     print("\n✅ GATE 3a (mưa CHIRPS) hoàn thành.")
     return 0

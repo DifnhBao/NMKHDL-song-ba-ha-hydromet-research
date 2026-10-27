@@ -1,58 +1,55 @@
 # 07 — Tài liệu tham khảo
 
-> **Lưu ý:** Chỉ liệt kê các nguồn đã sử dụng thực tế. Không tự tạo DOI hoặc tài liệu tham khảo giả.
+> Chỉ liệt kê nguồn thực tế đã dùng. Ngày truy cập: 27/10/2026.
 
-## Nguồn dữ liệu
+## 1. Dữ liệu và sản phẩm
 
-### Website Sông Ba Hạ
-- **URL:** https://www.sbh.vn/vi-VN/san-xuat/Tinh-hinh-san-xuat-60-1300
-- **Đơn vị:** Công ty Cổ phần Thủy điện Sông Ba Hạ
-- **Ngày truy cập:** 25/10/2026
-- **Nội dung:** Số liệu vận hành thủy điện hàng ngày (lưu lượng, mực nước, sản lượng)
+**CHIRPS v3.0 Final**
+- Funk, C., Peterson, P., Landsfeld, M., Pedreros, D., Verdin, J., Shukla, S.,
+  Husak, G., Rowland, J., Harrison, L., Hoell, A., Michaelsen, J. (2015).
+  The climate hazards infrared precipitation with stations — a new environmental
+  record for monitoring extremes. *Scientific Data*, 2, 150066.
+  https://doi.org/10.1038/sdata.2015.66
+- Climate Hazards Center, University of California, Santa Barbara.
+  CHIRPS v3.0 Final.
+  https://data.chc.ucsb.edu/products/CHIRPS/v3.0/
+  (kênh tải thực tế: ftp://ftp.chc.ucsb.edu/pub/org/chc/products/CHIRPS/v3.0/)
 
-### CHIRPS v3
-- **Tên đầy đủ:** Climate Hazards Group InfraRed Precipitation with Station data, Version 3
-- **Tổ chức:** Climate Hazards Center, University of California, Santa Barbara
-- **URL sản phẩm:** https://www.chc.ucsb.edu/data/chirps3
-- **URL dữ liệu tháng:** https://data.chc.ucsb.edu/products/CHIRPS/v3.0/monthly/global/
-- **URL dữ liệu ngày:** https://data.chc.ucsb.edu/products/CHIRPS/v3.0/daily/final/rnl/
-- **Ngày truy cập:** 10/2026
+**ERA5-Land**
+- Muñoz-Sabater, J., Dutra, E., Agustí-Panareda, A., Albergel, C., Arduini, G.,
+  Balsamo, G., et al. (2021). ERA5-Land: a state-of-the-art global reanalysis
+  dataset for land applications. *Earth System Science Data*, 13, 4349–4383.
+  https://doi.org/10.5194/essd-13-4349-2021
+- Copernicus Climate Change Service. ERA5-Land hourly/monthly data.
+  https://cds.climate.copernicus.eu/datasets/reanalysis-era5-land
+- Open-Meteo. Historical Weather API (models=era5_land).
+  https://open-meteo.com/en/docs/historical-weather-api
 
-### ERA5-Land
-- **Tên đầy đủ:** ERA5-Land hourly / monthly averaged data
-- **Tổ chức:** European Centre for Medium-Range Weather Forecasts (ECMWF), phân phối qua Copernicus Climate Data Store
-- **URL:** https://cds.climate.copernicus.eu/datasets/reanalysis-era5-land
-- **Biến:** 2m temperature
-- **Ngày truy cập:** 10/2026
+**Ranh giới lưu vực**
+- Lehner, B., Grill, G. (2013). Global river hydrography and network routing:
+  baseline data and new approaches to study the world's large river systems.
+  *Hydrological Processes*, 27(15), 2171–2186.
+  https://doi.org/10.1002/hyp.9740
+- HydroBASINS v1c (level 12), HydroSHEDS.
+  https://www.hydrosheds.org/products/hydrobasins
 
-### HydroBASINS
-- **Tên đầy đủ:** HydroBASINS v1c
-- **Tổ chức:** HydroSHEDS / World Wildlife Fund (WWF)
-- **URL:** https://www.hydrosheds.org/products/hydrobasins
-- **Dữ liệu:** Level 12, khu vực châu Á
-- **Ngày truy cập:** 10/2026
-- **Tham khảo:** Lehner, B., Grill, G. (2013). Global river hydrography and network routing: baseline data and new approaches to study the world's large river systems. *Hydrological Processes*, 27(15), 2171–2186.
+**Vị trí công trình**
+- OpenStreetMap contributors. Đập thủy điện Sông Ba Hạ (`way/480785944`),
+  nhà máy (`way/827889670`). OpenStreetMap API 0.6.
+  https://www.openstreetmap.org/way/480785944
+  Giấy phép ODbL.
 
-## Phần mềm và thư viện
+**Dữ liệu vận hành**
+- Trang thông tin vận hành Thủy điện Sông Ba Hạ (dữ liệu nội bộ được bàn giao
+  cho nhóm kỹ thuật). Không có DOI.
 
-| Phần mềm | Phiên bản | Mục đích |
-|---|---|---|
-| Python | 3.11+ | Ngôn ngữ lập trình chính |
-| pandas | — | Xử lý dữ liệu bảng |
-| numpy | — | Tính toán số |
-| matplotlib | — | Trực quan hóa |
-| scipy | — | Phân tích tương quan |
-| geopandas | — | Dữ liệu không gian |
-| shapely | — | Hình học không gian |
-| pyproj | — | Phép chiếu tọa độ |
-| rasterio | — | Dữ liệu raster |
-| rioxarray / xarray | — | Dữ liệu NetCDF |
-| cdsapi | — | Tải dữ liệu Copernicus |
-| requests | — | Tải dữ liệu HTTP |
-| openpyxl | — | Xuất Excel |
+## 2. Tài liệu đặc tả của học phần
 
-## Tài liệu nội bộ
+- `docs/DAC_TA_NGHIEN_CUU_V1.0.md` — Đặc tả nghiên cứu và triển khai kỹ thuật V1.0.
+- `docs/PHU_LUC_TRIEN_KHAI_V1.1.md` — Phụ lục triển khai V1.1.
+- `docs/WORKFLOW.md` — Quy trình làm việc, phê duyệt GATE.
 
-- Đặc tả nghiên cứu V1.0 (`docs/DAC_TA_NGHIEN_CUU_V1.0.md`)
-- Phụ lục triển khai V1.1 (`docs/PHU_LUC_TRIEN_KHAI_V1.1.md`)
-- Quy trình phối hợp (`docs/WORKFLOW.md`)
+## 3. Thư viện phần mềm
+
+- Python 3.11+; pandas; numpy; geopandas; shapely; rasterio; matplotlib;
+  xarray; rioxarray; requests.

@@ -88,8 +88,25 @@ def load_data():
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # T01: Danh mục nguồn dữ liệu
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+def _first_meta(path, column):
+    """Lấy giá trị metadata (source/status) thực tế từ CSV đầu ra."""
+    try:
+        s = pd.read_csv(path, usecols=[column])[column].dropna()
+        return str(s.iloc[0]) if len(s) else "không rõ"
+    except Exception:
+        return "không rõ"
+
+
 def create_T01():
-    """T01 — Danh mục nguồn dữ liệu."""
+    """T01 — Danh mục nguồn dữ liệu.
+
+    Nguồn của mưa/nhiệt độ được đọc từ chính CSV đầu ra để T01 không thể
+    mâu thuẫn với dữ liệu thực tế đã dùng.
+    """
+    rain_src = _first_meta(PROC_DIR / "rainfall_monthly.csv", "source")
+    temp_src = _first_meta(PROC_DIR / "temperature_monthly.csv", "source")
+    temp_note = _first_meta(PROC_DIR / "temperature_monthly.csv", "status")
+
     records = [
         {
             "variable": "Lưu lượng nước về hồ (m³/s)",
@@ -107,25 +124,26 @@ def create_T01():
             "spatial_resolution": "Điểm",
             "temporal_resolution": "Ngày",
             "period": "2023-01 – 2025-12",
-            "notes": "Một số ngày nghi đảo cột"
+            "notes": "Một số ngày nghi đảo cột; đã gắn cờ INVALID_CONFIRMED"
         },
         {
             "variable": "Lượng mưa lưu vực (mm)",
-            "source": "CHIRPS v3 Final (Climate Hazards Center)",
+            "source": rain_src,
             "type": "Vệ tinh kết hợp quan trắc",
             "spatial_resolution": "~0.05° (~5 km)",
             "temporal_resolution": "Tháng (P0), Ngày rnl (P1)",
             "period": "2023-01 – 2025-12",
-            "notes": "Mưa ngày phân rã từ khoảng 5 ngày bằng ERA5"
+            "notes": ("Mưa ngày phân rã từ tổng 5 ngày bằng ERA5; "
+                      "trung bình có trọng số diện tích trên polygon lưu vực")
         },
         {
             "variable": "Nhiệt độ không khí 2m (°C)",
-            "source": "ERA5-Land (Copernicus CDS)",
+            "source": temp_src,
             "type": "Tái phân tích",
-            "spatial_resolution": "~0.1° (~9 km)",
-            "temporal_resolution": "Tháng (P0), Giờ→ngày (P1)",
+            "spatial_resolution": "~0.1° (~9 km)" if "ERA5" in temp_src else "Điểm lưới",
+            "temporal_resolution": "Tháng (P0), Ngày (P1)",
             "period": "2023-01 – 2025-12",
-            "notes": "Dữ liệu theo UTC; chuyển K→°C"
+            "notes": f"Trạng thái dữ liệu: {temp_note}"
         },
         {
             "variable": "Ranh giới lưu vực",
@@ -134,7 +152,7 @@ def create_T01():
             "spatial_resolution": "~15 arc-second",
             "temporal_resolution": "Tĩnh",
             "period": "—",
-            "notes": "Diện tích tham khảo 11.115 km²"
+            "notes": "Diện tích tham khảo 11.115 km²; cửa ra theo OSM way/480785944"
         },
     ]
     df = pd.DataFrame(records)
@@ -148,35 +166,57 @@ def create_T01():
 # T02: Kết quả kiểm tra chất lượng thủy văn
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 def create_T02(hydro_qa, exceptions):
-    """T02 — Kết quả kiểm tra chất lượng thủy văn."""
+    """T02 — Kết quả kiểm tra chất lượng thủy văn (đủ 6 biến, V1.1 §5–6)."""
     if hydro_qa is None:
         print("  ⚠️ Không có hydrology_clean.csv")
         return
 
+    var_map = [
+        ("inflow_m3s", "inflow_quality", "Lưu lượng về hồ"),
+        ("upstream_level_m", "upstream_level_quality", "Mực nước thượng lưu"),
+        ("downstream_level_m", "downstream_level_quality", "Mực nước hạ lưu"),
+        ("release_m3s", "release_quality", "Lưu lượng xả"),
+        ("daily_energy_kwh", "daily_energy_quality", "Sản lượng điện ngày"),
+        ("max_power_mw", "max_power_quality", "Công suất cực đại"),
+    ]
+
     records = []
-    for col, qcol in [("inflow_m3s", "inflow_quality"),
-                       ("upstream_level_m", "upstream_level_quality"),
-                       ("downstream_level_m", "downstream_level_quality")]:
-        if qcol not in hydro_qa.columns:
+    total = len(hydro_qa)
+    for col, qcol, label in var_map:
+        if col not in hydro_qa.columns or qcol not in hydro_qa.columns:
             continue
-        total = len(hydro_qa)
-        valid = (hydro_qa[qcol] == "VALID").sum()
-        suspect = (hydro_qa[qcol] == "SUSPECT").sum()
-        missing = (hydro_qa[qcol] == "MISSING").sum()
-        invalid = (hydro_qa[qcol] == "INVALID_CONFIRMED").sum()
-        corrected = (hydro_qa[qcol] == "CORRECTED").sum()
+        s = hydro_qa[col]
+        q = hydro_qa[qcol]
+        valid = (q == "VALID").sum()
         records.append({
             "variable": col,
+            "label": label,
+            "unit": ("m³/s" if "m3s" in col else
+                     "m" if col.endswith("_m") else
+                     "kWh" if "energy" in col else "MW"),
             "total_days": total,
             "VALID": int(valid),
-            "SUSPECT": int(suspect),
-            "MISSING": int(missing),
-            "INVALID_CONFIRMED": int(invalid),
-            "CORRECTED": int(corrected),
-            "valid_pct": round(valid / total * 100, 1),
+            "SUSPECT": int((q == "SUSPECT").sum()),
+            "MISSING": int((q == "MISSING").sum()),
+            "INVALID_CONFIRMED": int((q == "INVALID_CONFIRMED").sum()),
+            "CORRECTED": int((q == "CORRECTED").sum()),
+            "valid_pct": round(valid / total * 100, 2),
+            "missing_pct": round((q == "MISSING").sum() / total * 100, 2),
+            "n_zero": int((s == 0).sum()),
+            "min": round(s.min(), 2) if s.notna().any() else np.nan,
+            "max": round(s.max(), 2) if s.notna().any() else np.nan,
         })
 
     df = pd.DataFrame(records)
+
+    # Dòng tổng hợp số ngoại lệ theo cờ (để T02 khớp T06)
+    if exceptions is not None and len(exceptions) > 0:
+        exc_summary = (exceptions.groupby(["variable", "flag"]).size()
+                       .reset_index(name="n_records"))
+        exc_path = TAB_DIR / "T02b_exception_counts.csv"
+        exc_summary.to_csv(exc_path, index=False, encoding="utf-8-sig")
+        print(f"  → {exc_path}")
+
     path = TAB_DIR / "T02_hydrology_qa_results.csv"
     df.to_csv(path, index=False, encoding="utf-8-sig")
     print(f"  → {path}")
@@ -235,6 +275,26 @@ def create_T03(monthly):
             "total_3yr": np.nan,
         })
 
+    # Đặc trưng mùa mưa / mùa khô (V1.1 §12.5)
+    if len(rain) > 0:
+        r = monthly.dropna(subset=["rainfall_total_mm"]).copy()
+        r["month_num"] = r["year_month"].str[5:7].astype(int)
+        r["season"] = np.where(r["month_num"].isin([5, 6, 7, 8, 9, 10, 11]),
+                               "Mùa mưa (T5–T11)", "Mùa khô (T12–T4)")
+        total_all = r["rainfall_total_mm"].sum()
+        for season, grp in r.groupby("season"):
+            records.append({
+                "variable": f"Lượng mưa tháng — {season}",
+                "n_months": len(grp),
+                "mean": round(grp["rainfall_total_mm"].mean(), 1),
+                "median": round(grp["rainfall_total_mm"].median(), 1),
+                "std": round(grp["rainfall_total_mm"].std(), 1),
+                "min": round(grp["rainfall_total_mm"].min(), 1),
+                "max": round(grp["rainfall_total_mm"].max(), 1),
+                "total_3yr": round(grp["rainfall_total_mm"].sum(), 1),
+                "share_pct": round(grp["rainfall_total_mm"].sum() / total_all * 100, 1),
+            })
+
     df = pd.DataFrame(records)
     path = TAB_DIR / "T03_meteorology_stats.csv"
     df.to_csv(path, index=False, encoding="utf-8-sig")
@@ -246,27 +306,38 @@ def create_T03(monthly):
 # T04: Thống kê thủy văn
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 def create_T04(daily, hydro_qa):
-    """T04 — Thống kê thủy văn."""
+    """T04 — Thống kê thủy văn (phân bố, phân vị, theo năm — V1.1 §13)."""
     records = []
 
-    # Lưu lượng (chỉ dùng VALID + CORRECTED)
     if hydro_qa is not None:
         valid_mask = hydro_qa["inflow_quality"].isin(["VALID", "CORRECTED"])
-        inflow = hydro_qa.loc[valid_mask, "inflow_m3s"].dropna()
+        inflow_df = hydro_qa.loc[valid_mask, ["date", "inflow_m3s"]].dropna()
     else:
-        inflow = daily["inflow_m3s"].dropna()
+        inflow_df = daily[["date", "inflow_m3s"]].dropna()
+
+    inflow = inflow_df["inflow_m3s"]
+
+    def quant(v, q):
+        return round(v.quantile(q), 3) if len(v) else np.nan
 
     if len(inflow) > 0:
         records.append({
             "variable": "Lưu lượng về hồ (m³/s)",
             "n_days": len(inflow),
-            "mean": round(inflow.mean(), 1),
-            "median": round(inflow.median(), 1),
-            "std": round(inflow.std(), 1),
-            "min": round(inflow.min(), 1),
-            "max": round(inflow.max(), 1),
-            "p25": round(inflow.quantile(0.25), 1),
-            "p75": round(inflow.quantile(0.75), 1),
+            "mean": round(inflow.mean(), 3),
+            "median": round(inflow.median(), 3),
+            "std": round(inflow.std(), 3),
+            "cv": round(inflow.std() / inflow.mean(), 3) if inflow.mean() else np.nan,
+            "min": round(inflow.min(), 3),
+            "p05": quant(inflow, 0.05),
+            "p10": quant(inflow, 0.10),
+            "p25": quant(inflow, 0.25),
+            "p75": quant(inflow, 0.75),
+            "p90": quant(inflow, 0.90),
+            "p95": quant(inflow, 0.95),
+            "max": round(inflow.max(), 3),
+            "skewness": round(inflow.skew(), 3),
+            "kurtosis": round(inflow.kurtosis(), 3),
         })
 
     # Mực nước thượng lưu (VALID + CORRECTED)
@@ -280,13 +351,45 @@ def create_T04(daily, hydro_qa):
         records.append({
             "variable": "Mực nước thượng lưu (m)",
             "n_days": len(level),
-            "mean": round(level.mean(), 2),
-            "median": round(level.median(), 2),
-            "std": round(level.std(), 2),
-            "min": round(level.min(), 2),
-            "max": round(level.max(), 2),
-            "p25": round(level.quantile(0.25), 2),
-            "p75": round(level.quantile(0.75), 2),
+            "mean": round(level.mean(), 3),
+            "median": round(level.median(), 3),
+            "std": round(level.std(), 3),
+            "cv": round(level.std() / level.mean(), 3),
+            "min": round(level.min(), 3),
+            "p05": quant(level, 0.05),
+            "p10": quant(level, 0.10),
+            "p25": quant(level, 0.25),
+            "p75": quant(level, 0.75),
+            "p90": quant(level, 0.90),
+            "p95": quant(level, 0.95),
+            "max": round(level.max(), 3),
+            "skewness": round(level.skew(), 3),
+            "kurtosis": round(level.kurtosis(), 3),
+        })
+
+    # Theo năm — nhận diện thời kỳ dòng chảy cao/thấp (V1.1 §13.4)
+    inflow_df = inflow_df.copy()
+    inflow_df["date"] = pd.to_datetime(inflow_df["date"])
+    inflow_df["year"] = inflow_df["date"].dt.year
+    for year, grp in inflow_df.groupby("year"):
+        v = grp["inflow_m3s"]
+        records.append({
+            "variable": f"Lưu lượng về hồ — năm {year} (m³/s)",
+            "n_days": len(v),
+            "mean": round(v.mean(), 3),
+            "median": round(v.median(), 3),
+            "std": round(v.std(), 3),
+            "cv": round(v.std() / v.mean(), 3) if v.mean() else np.nan,
+            "min": round(v.min(), 3),
+            "p05": quant(v, 0.05),
+            "p10": quant(v, 0.10),
+            "p25": quant(v, 0.25),
+            "p75": quant(v, 0.75),
+            "p90": quant(v, 0.90),
+            "p95": quant(v, 0.95),
+            "max": round(v.max(), 3),
+            "skewness": round(v.skew(), 3),
+            "kurtosis": round(v.kurtosis(), 3),
         })
 
     df = pd.DataFrame(records)
@@ -354,14 +457,18 @@ def create_F03(monthly):
     x = range(len(temp))
     ax.plot(x, temp["temperature_mean_c"], "o-", color="#E53935",
             markersize=5, linewidth=1.5, label="Nhiệt độ trung bình")
-    ax.fill_between(x, temp["temperature_mean_c"],
+    ymin = float(temp["temperature_mean_c"].min())
+    ymax = float(temp["temperature_mean_c"].max())
+    ax.set_ylim(max(0.0, ymin - 2.0), ymax + 1.5)
+    ax.fill_between(x, temp["temperature_mean_c"], ax.get_ylim()[0],
                     alpha=0.15, color="#E53935")
     ax.set_xticks(range(0, len(temp), 3))
     ax.set_xticklabels(temp["year_month"].iloc[::3], rotation=45, ha="right")
     ax.set_xlabel("Tháng")
     ax.set_ylabel("Nhiệt độ (°C)")
     ax.set_title("F03 — Nhiệt độ trung bình tháng 2023–2025\n"
-                 "(Nguồn: ERA5-Land 2m temperature — trung bình lưu vực)",
+                 "(Nguồn: ERA5-Land 2 m — trung bình có trọng số cos(vĩ độ) "
+                 "trên lưu vực)",
                  fontweight="bold")
     ax.legend()
     ax.grid(alpha=0.3)
@@ -523,36 +630,103 @@ def create_F06(daily, hydro_qa):
     print(f"  → {path}")
 
 
+def create_F10(daily, hydro_qa):
+    """F10 — Phân bố lưu lượng về hồ (V1.1 §13.4).
+
+    Bổ sung ngoài danh mục tối thiểu F01–F09 để đáp ứng yêu cầu phân tích
+    phân bố; không thay thế hình nào trong danh mục bắt buộc.
+    """
+    if hydro_qa is not None:
+        valid_mask = hydro_qa["inflow_quality"].isin(["VALID", "CORRECTED"])
+        d = hydro_qa.loc[valid_mask, ["date", "inflow_m3s"]].dropna().copy()
+    else:
+        d = daily[["date", "inflow_m3s"]].dropna().copy()
+
+    if len(d) == 0:
+        print("  ⚠️ Không có dữ liệu lưu lượng để vẽ F10")
+        return
+
+    d["date"] = pd.to_datetime(d["date"])
+    d["year"] = d["date"].dt.year
+    d["season"] = np.where(d["date"].dt.month.isin([5, 6, 7, 8, 9, 10, 11]),
+                           "Mùa mưa (T5–T11)", "Mùa khô (T12–T4)")
+
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5.5))
+
+    ax = axes[0]
+    bins = np.logspace(np.log10(max(d["inflow_m3s"].min(), 0.1)),
+                       np.log10(d["inflow_m3s"].max()), 45)
+    ax.hist(d["inflow_m3s"], bins=bins, color="#1E88E5",
+            edgecolor="white", linewidth=0.4)
+    ax.set_xscale("log")
+    ax.axvline(d["inflow_m3s"].median(), color="#E53935", linestyle="--",
+               label=f"Trung vị = {d['inflow_m3s'].median():,.0f} m³/s")
+    ax.axvline(d["inflow_m3s"].quantile(0.95), color="#FB8C00", linestyle=":",
+               label=f"P95 = {d['inflow_m3s'].quantile(0.95):,.0f} m³/s")
+    ax.set_xlabel("Lưu lượng về hồ (m³/s, thang log)")
+    ax.set_ylabel("Số ngày")
+    ax.set_title("(a) Phân bố toàn giai đoạn", fontweight="bold")
+    ax.legend(fontsize=8)
+    ax.grid(alpha=0.3)
+
+    ax = axes[1]
+    groups = [d.loc[d["year"] == y, "inflow_m3s"].values for y in [2023, 2024, 2025]]
+    bp = ax.boxplot(groups, tick_labels=["2023", "2024", "2025"], patch_artist=True,
+                    showfliers=True, flierprops=dict(marker=".", markersize=3,
+                                                     alpha=0.5))
+    for patch, color in zip(bp["boxes"], ["#90CAF9", "#A5D6A7", "#FFCC80"]):
+        patch.set_facecolor(color)
+    ax.set_yscale("log")
+    ax.set_xlabel("Năm")
+    ax.set_ylabel("Lưu lượng về hồ (m³/s, thang log)")
+    ax.set_title("(b) Phân bố theo năm", fontweight="bold")
+    ax.grid(alpha=0.3)
+
+    fig.suptitle(
+        "F10 — Phân bố lưu lượng nước về hồ 2023–2025 "
+        "(chỉ ngày VALID/CORRECTED)\nNguồn: Website Sông Ba Hạ — sbh.vn",
+        fontweight="bold", fontsize=11)
+    fig.tight_layout()
+
+    path = FIG_DIR / "F10_inflow_distribution.png"
+    fig.savefig(path, dpi=200, bbox_inches="tight")
+    plt.close(fig)
+    print(f"  → {path}")
+
+
 def main():
     print("=" * 60)
     print("GATE 5a — Phân tích khám phá (RQ1 + RQ2)")
     print("=" * 60)
 
-    print("\n[1/8] Đọc dữ liệu...")
+    print("\n[1/9] Đọc dữ liệu...")
     daily, monthly, hydro_qa, exceptions = load_data()
 
-    print("\n[2/8] T01 — Danh mục nguồn dữ liệu...")
+    print("\n[2/9] T01 — Danh mục nguồn dữ liệu...")
     create_T01()
 
-    print("\n[3/8] T02 — Kết quả QA thủy văn...")
+    print("\n[3/9] T02 — Kết quả QA thủy văn...")
     create_T02(hydro_qa, exceptions)
 
-    print("\n[4/8] T03 — Thống kê khí tượng...")
+    print("\n[4/9] T03 — Thống kê khí tượng...")
     create_T03(monthly)
 
-    print("\n[5/8] T04 — Thống kê thủy văn...")
+    print("\n[5/9] T04 — Thống kê thủy văn...")
     create_T04(daily, hydro_qa)
 
-    print("\n[6/8] Biểu đồ khí tượng (F02, F03)...")
+    print("\n[6/9] Biểu đồ khí tượng (F02, F03)...")
     create_F02(monthly)
     create_F03(monthly)
 
-    print("\n[7/8] Biểu đồ thủy văn (F04, F05)...")
+    print("\n[7/9] Biểu đồ thủy văn (F04, F05)...")
     create_F04(daily, hydro_qa)
     create_F05(monthly)
 
-    print("\n[8/8] F06 — Mực nước / phân bố lưu lượng...")
+    print("\n[8/9] F06 — Mực nước / phân bố lưu lượng...")
     create_F06(daily, hydro_qa)
+
+    print("\n[9/9] F10 — Phân bố lưu lượng...")
+    create_F10(daily, hydro_qa)
 
     print("\n✅ GATE 5a (phân tích A — RQ1, RQ2) hoàn thành.")
     return 0
