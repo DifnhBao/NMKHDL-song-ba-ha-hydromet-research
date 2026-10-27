@@ -537,6 +537,9 @@ def main():
     if struct_issues:
         for iss in struct_issues:
             print(f"  ⚠️  {iss}")
+        print("  ❌ GATE 1 KHÔNG ĐẠT: dữ liệu nguồn thiếu hoặc sai cấu trúc.")
+        print("  ❌ Dừng trước khi ghi đè dữ liệu processed và báo cáo QA.")
+        return 1
     else:
         print("  ✅ Cấu trúc hợp lệ: 1.096 ngày, không trùng, liên tục.")
 
