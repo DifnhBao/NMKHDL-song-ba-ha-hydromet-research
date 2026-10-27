@@ -26,7 +26,7 @@ Kịch bản giữ cả ngày SUSPECT: lag0 = 0,5409, lag1 = 0,4839. Bảng và 
 
 ## Các vấn đề tồn tại
 - `gate2_approval.json` đã sửa rõ phạm vi CHẤP NHẬN CÓ ĐIỀU KIỆN; không lấy trạng thái `approved:true` trong tệp đó làm chứng nhận nghiệm thu cuối.
-- Mực nước `INVALID_CONFIRMED` còn thiếu chứng cứ độc lập. Chưa tự sửa giá trị hoặc thống kê khi người giám sát chưa có cơ sở xác nhận.
+- Các ngày mực nước nghi đảo cột đã được chạy lại từ raw và gắn `SUSPECT` (không phải `INVALID_CONFIRMED`); chưa xác minh nguyên nhân với nguồn độc lập.
 - Dữ liệu mưa tháng đã được trưởng nhóm tải lại để chạy phép so sánh, nhưng nguyên bộ raw HTML/ERA5-Land chưa được tái lập end-to-end.
 - `scripts/08_write_handoff.py` cần chạy thử trên bộ kết quả cập nhật; sau thay đổi QA mực nước cần tái xuất các bảng và hình liên quan.
 
