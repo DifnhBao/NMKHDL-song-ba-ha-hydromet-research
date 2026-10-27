@@ -6,7 +6,7 @@
 |---|---|---|---|---|---|---|
 | Lưu lượng nước về hồ (m³/s) | Website Sông Ba Hạ (sbh.vn) | Số liệu công trình | Điểm (tại đập) | Ngày | 2023-01 – 2025-12 | Chưa xác minh ý nghĩa thời gian (trung bình ngày vs tức thời) |
 | Mực nước thượng/hạ lưu (m) | Website Sông Ba Hạ (sbh.vn) | Số liệu công trình | Điểm | Ngày | 2023-01 – 2025-12 | Một số ngày nghi đảo cột; đã gắn cờ INVALID_CONFIRMED |
-| Lượng mưa lưu vực (mm) | CHIRPS v3.0 Final monthly | Vệ tinh kết hợp quan trắc | ~0.05° (~5 km) | Tháng (P0), Ngày rnl (P1) | 2023-01 – 2025-12 | Mưa ngày phân rã từ tổng 5 ngày bằng ERA5; trung bình có trọng số diện tích trên polygon lưu vực |
+| Lượng mưa lưu vực (mm) | CHIRPS v3.0 Final monthly | Vệ tinh kết hợp quan trắc | ~0.05° (~5 km) | Tháng (P0), Ngày rnl (P1) | 2023-01 – 2025-12 | Mưa ngày phân rã từ tổng 5 ngày bằng ERA5; xấp xỉ theo pixel trong polygon và cos(vĩ độ) |
 | Nhiệt độ không khí 2m (°C) | ERA5-Land via Open-Meteo Archive API (mean of daily means) | Tái phân tích | ~0.1° (~9 km) | Tháng (P0), Ngày (P1) | 2023-01 – 2025-12 | Trạng thái dữ liệu: OK |
 | Ranh giới lưu vực | HydroBASINS v1c (HydroSHEDS/WWF) | Dữ liệu địa lý toàn cầu | ~15 arc-second | Tĩnh | — | Diện tích tham khảo 11.115 km²; cửa ra theo OSM way/480785944 |
 
@@ -47,7 +47,7 @@ Chi tiết quy trình: `outputs/quality/basin_method.md`; bằng chứng số:
   chủ CHC, cùng sản phẩm và cùng phiên bản.
 - Độ phân giải: 0,05° (~5,5 km); tháng: sản phẩm monthly; ngày: sản phẩm `rnl`.
 - Phương pháp tổng hợp không gian: cắt raster theo polygon lưu vực, loại pixel
-  nodata (-9999), trung bình có trọng số **cos(vĩ độ)** theo diện tích ô:
+  nodata (-9999), xấp xỉ trung bình theo các pixel mặt nạ chọn, trọng số **cos(vĩ độ)**; chưa tính diện tích giao pixel biên theo V1.1:
   `P_t = Σ(A_i × P_i,t) / Σ(A_i)`.
 - Số pixel dùng cho mưa tháng: 377; mưa ngày:
   379.
