@@ -828,32 +828,38 @@ Ghi chú:
         (HANDOFF / "selected_data" / "data_dictionary.md").write_text(
             ddict.read_text(encoding="utf-8"), encoding="utf-8")
 
-    # Keep research-review qualifications reproducible after re-running GATE 6.
-    # Do not overwrite 08_REVIEWER_NOTES.md, which records owner-approved decisions.
+    # Review appendix: values come from data files; do not freeze old correlations.
     reviewer_note = HANDOFF / "08_REVIEWER_NOTES.md"
     if reviewer_note.exists():
+        alt_path = HANDOFF / "tables" / "T08_alternative_suspect_sensitivity.csv"
+        if not alt_path.exists():
+            raise RuntimeError("Missing T08: run scripts/10_suspect_sensitivity.py first.")
+        alt = pd.read_csv(alt_path).set_index("scenario")
+        base = alt.loc["VALID_ONLY"]
+        suspect = alt.loc["INCLUDE_SUSPECT_AS_REPORTED"]
         appendices = {
             "02_data_sources_and_methods.md": (
-                "\\n\\n## Lưu ý nghiệm thu phương pháp (sau V1.1)\\n"
-                "Ranh giới lưu vực chỉ được CHẤP NHẬN CÓ ĐIỀU KIỆN như đại diện xấp xỉ. "
-                "CHIRPS dùng mask pixel nhị phân và trọng số cos(vĩ độ), không tính "
-                "phần giao pixel biên. Sai số chưa được định lượng; chưa chốt "
-                "phương pháp mưa cuối cùng. Xem 08_REVIEWER_NOTES.md.\\n"),
+                "\n\n## Lưu ý nghiệm thu không gian\n"
+                "Polygon CHẤP NHẬN CÓ ĐIỀU KIỆN. Phương pháp mưa hiện dùng "
+                "mask pixel nhị phân và trọng số cos(vĩ độ); chưa tính phần "
+                "giao các ô biên và chưa định lượng sai lệch. "
+                "Chưa được chốt làm phương pháp cuối.\n"
+            ),
             "04_results_and_interpretation.md": (
-                "\\n\\n## Bổ sung kiểm tra độ nhạy SUSPECT của trưởng nhóm\\n"
-                "Dữ liệu chính chỉ dùng ngày inflow VALID: Pearson lag 0=0,5856; "
-                "lag 1=0,6147. Nếu giữ cả ngày SUSPECT để kiểm tra độ nhạy: "
-                "lag 0=0,5409; lag 1=0,4839. Thứ tự bị đảo chiều, do đó "
-                "KHÔNG kết luận lag 1 mạnh hơn ổn định. Đây là phép kiểm tra "
-                "chưa xác thực các giá trị cực trị; xem bảng T08 và "
-                "08_REVIEWER_NOTES.md.\\n"),
+                "\n\n## Kiểm tra độ nhạy SUSPECT\n"
+                f"Kịch bản chỉ dùng ngày VALID: Pearson lag 0 = {base['pearson_lag0']:.4f}, "
+                f"lag 1 = {base['pearson_lag1']:.4f}. "
+                f"Kịch bản giữ SUSPECT theo nguồn: lag 0 = {suspect['pearson_lag0']:.4f}, "
+                f"lag 1 = {suspect['pearson_lag1']:.4f}. "
+                "Thứ tự thay đổi; không kết luận lag 1 mạnh hơn ổn định. "
+                "Đây là độ nhạy, không phải kiểm chứng giá trị cực trị.\n"
+            ),
             "05_limitations.md": (
-                "\\n\\n## Giới hạn bổ sung sau rà soát\\n"
-                "Sai số do dùng mask pixel và cos(vĩ độ) thay vì diện tích giao "
-                "pixel–polygon CHƯA được đo từ raster gốc; "
-                "polygon CHỈ chấp nhận có điều kiện. Tương quan độ trễ thay "
-                "đổi thứ tự khi giữ các ngày SUSPECT. Không coi các bước này "
-                "đã qua nghiệm thu cuối. Xem 08_REVIEWER_NOTES.md.\\n"),
+                "\n\n## Giới hạn nghiệm thu cập nhật\n"
+                "Polygon chỉ được chấp nhận có điều kiện; trọng số giao pixel "
+                "CHIRPS chưa được xác minh từ raster nguyên bản. "
+                "Kết quả lag 0/lag 1 không bền vững trước cách xử lý SUSPECT.\n"
+            ),
         }
         for fname, note in appendices.items():
             p = HANDOFF / fname
