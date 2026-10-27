@@ -7,12 +7,12 @@
 [![Chuỗi ngày](https://img.shields.io/badge/Chu%E1%BB%97i%20th%E1%BB%9Di%20gian-1.096%20ng%C3%A0y%20(36%20th%C3%A1ng)-brightgreen.svg)](#h%E1%BB%87-th%E1%BB%91ng-c%E1%BB%95ng-nghi%E1%BB%87m-thu-gate-16)
 [![Diện tích lưu vực](https://img.shields.io/badge/Di%E1%BB%87n%20t%C3%ADch-11.160%2C6%20km%C2%B2%20(%CE%94%200%2C41%25)-orange.svg)](#k%E1%BA%BFt-qu%E1%BA%A3-ch%C3%ADnh)
 [![Python](https://img.shields.io/badge/Python-%E2%89%A5%203.11%20%7C%203.13-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
-[![Kiểm định GATE](https://img.shields.io/badge/GATE%201%E2%80%936-100%25%20Passed-success.svg)](#h%E1%BB%87-th%E1%BB%91ng-c%E1%BB%95ng-nghi%E1%BB%87m-thu-gate-16)
-[![Trạng thái pipeline](https://img.shields.io/badge/Pipeline-End--to--End%20Reproducible-success.svg)](#h%C6%B0%E1%BB%9Bng-d%E1%BA%ABn-ch%E1%BA%A1y-quy-tr%C3%ACnh)
+[![Nghiệm thu](https://img.shields.io/badge/Nghi%E1%BB%87m%20thu-Ch%E1%BB%9D%20ho%C3%A0n%20t%E1%BA%A5t-orange.svg)](#h%E1%BB%87-th%E1%BB%91ng-c%E1%BB%95ng-nghi%E1%BB%87m-thu-gate-16)
+[![Tái lập](https://img.shields.io/badge/T%C3%A1i%20l%E1%BA%ADp-Ch%C6%B0a%20x%C3%A1c%20minh%20end--to--end-yellow.svg)](#h%C6%B0%E1%BB%9Bng-d%E1%BA%ABn-ch%E1%BA%A1y-quy-tr%C3%ACnh)
 
 </div>
 
-> **Trạng thái dự án:** Toàn bộ **6 Cổng Nghiệm thu (GATE 1 – GATE 6)** đã hoàn thành và đạt chuẩn kiểm định. Ranh giới không gian lưu vực đã được người giám sát nghiệm thu chính thức (`outputs/quality/gate2_approval.json`). Toàn bộ 27 tệp ấn phẩm phục vụ viết báo cáo tiểu luận đã được tự động đồng bộ hóa tại thư mục `handoff_writer/`.
+> **Trạng thái nghiên cứu:** Bộ dữ liệu và sản phẩm kỹ thuật GATE 1–6 đã được tạo, nhưng **CHƯA NGHIỆM THU KHOA HỌC CUỐI**. Polygon lưu vực được trưởng nhóm **CHẤP NHẬN CÓ ĐIỀU KIỆN**; đang chờ định lượng sai số mưa CHIRPS theo trọng số diện tích giao pixel. Hai kịch bản lưu lượng `SUSPECT` được giữ song song. Dữ liệu thô không có đủ trên GitHub để xác nhận chạy lại end-to-end. Xem [quyết định nghiệm thu](docs/OWNER_DECISIONS_2026-10-27.md) và [PR #9](../../pull/9).
 
 ---
 
@@ -519,3 +519,8 @@ Theo đúng tinh thần của [DAC_TA_NGHIEN_CUU_V1.0.md](docs/DAC_TA_NGHIEN_CUU
 <div align="center">
   <sub>Bản quyền kỹ thuật © 2026 Nhóm Nghiên cứu Khí tượng Thủy văn Sông Ba Hạ — Học viện Công nghệ Bưu chính Viễn thông (PTIT).</sub>
 </div>
+
+
+## Trạng thái nghiệm thu hiện hành (27/10/2026)
+
+**Không dùng README này làm chứng nhận hoàn tất.** Quyết định mới nhất của trưởng nhóm nằm tại [`docs/OWNER_DECISIONS_2026-10-27.md`](docs/OWNER_DECISIONS_2026-10-27.md). Polygon được sử dụng có điều kiện; thuật toán mưa hiện tại là xấp xỉ theo mask nhị phân và cos(vĩ độ), phải so sánh với trọng số diện tích giao raster trước khi chốt. Bảng T08 thể hiện hai kịch bản lưu lượng, không suy ra nguyên nhân–kết quả hoặc độ trễ thực. Đợt chỉnh sửa cuối đang ở **PR #9 (Draft)**, `main` chưa phải bản báo cáo nghiệm thu cuối.
