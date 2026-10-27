@@ -46,6 +46,9 @@
   polygon nhưng chưa khảo sát thực địa.
 - Trạm đo mưa/khí tượng không nằm trong lưu vực; toàn bộ là trung bình không gian.
 
+- Giá trị mưa là xấp xỉ trung bình theo mask pixel và cos(vĩ độ), không tính diện tích giao riêng của pixel biên với polygon.
+- Trường hợp giữ cả lưu lượng SUSPECT, lag 0 = 0,541 và lag 1 = 0,484 (so với 0,586 và 0,615 khi loại SUSPECT). Kết quả về độ trễ không bền vững theo cách xử lý ngoại lệ.
+
 ## 5. Giới hạn phương pháp
 
 - Tương quan Pearson/Spearman **không chứng minh nhân quả**; tính mùa chung của
