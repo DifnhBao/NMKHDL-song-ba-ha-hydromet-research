@@ -100,10 +100,10 @@ def restore_basin_validation() -> None:
           "Hình học polygon không hợp lệ")
     check(int(feature["properties"]["HYBAS_ID"]) == int(approved["outlet_hybas_id"]),
           "HYBAS_ID khác quyết định nghiệm thu")
-    dlat = capture_number(r"Tuyến đập \\(WGS84\\):\\*\\*\\s*([0-9.]+)°N", method, "vĩ độ đập")
-    dlon = capture_number(r"Tuyến đập \\(WGS84\\):\\*\\*\\s*[0-9.]+°N,\\s*([0-9.]+)°E", method, "kinh độ đập")
-    plat = capture_number(r"Nhà máy \\(WGS84\\):\\*\\*\\s*([0-9.]+)°N", method, "vĩ độ nhà máy")
-    plon = capture_number(r"Nhà máy \\(WGS84\\):\\*\\*\\s*[0-9.]+°N,\\s*([0-9.]+)°E", method, "kinh độ nhà máy")
+    dlat = capture_number(r"Tuyến đập \(WGS84\):\*\*\s*([0-9.]+)°N", method, "vĩ độ đập")
+    dlon = capture_number(r"Tuyến đập \(WGS84\):\*\*\s*[0-9.]+°N,\s*([0-9.]+)°E", method, "kinh độ đập")
+    plat = capture_number(r"Nhà máy \(WGS84\):\*\*\s*([0-9.]+)°N", method, "vĩ độ nhà máy")
+    plon = capture_number(r"Nhà máy \(WGS84\):\*\*\s*[0-9.]+°N,\s*([0-9.]+)°E", method, "kinh độ nhà máy")
     dam_inside = geom.contains(Point(dlon, dlat))
     plant_inside = geom.contains(Point(plon, plat))
     check(dam_inside and plant_inside, "Đập hoặc nhà máy không nằm trong polygon")
@@ -122,7 +122,7 @@ def restore_basin_validation() -> None:
     check(abs(deviation_pct - float(approved["deviation_pct"])) < 0.02,
           "Sai lệch diện tích không khớp hồ sơ nghiệm thu")
     area_sum = capture_number(
-        r"Tổng SUB_AREA của các tiểu lưu vực:\\*\\*\\s*([0-9,.]+)",
+        r"Tổng SUB_AREA của các tiểu lưu vực:\*\*\s*([0-9,.]+)",
         method, "tổng SUB_AREA tiểu lưu vực"
     )
     rows = [
