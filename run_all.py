@@ -307,6 +307,12 @@ def main():
                 errors.append("GATE 2 approval required")
                 print("DUNG truoc GATE 3: " + approval_msg)
                 break
+        # Generate the two reviewed inflow scenarios immediately before the writer handoff.
+        if step["gate"] == 6:
+            sens_code = run_script("10_suspect_sensitivity.py", "QA — hai kịch bản SUSPECT")
+            if sens_code != 0:
+                errors.append("10_suspect_sensitivity.py")
+                break
         code = run_script(step["script"], step["desc"])
         if code != 0:
             errors.append(step["script"])
