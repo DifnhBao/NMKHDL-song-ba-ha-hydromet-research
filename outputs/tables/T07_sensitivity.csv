@@ -1,0 +1,3 @@
+﻿metric,base_n_pairs,base_pearson_r,sens_n_pairs,sens_pearson_r,delta_pearson_r,base_spearman_r,sens_spearman_r,delta_spearman_r,base_pearson_p,sens_pearson_p
+lag 0,36,0.5856,34,0.483,-0.1026,0.5439,0.4982,-0.0457,0.000176,0.003813
+lag 1,35,0.6147,32,0.6877,0.073,0.793,0.7537,-0.0393,8.5e-05,1.4e-05

@@ -1,0 +1,22 @@
+{
+  "approved": true,
+  "approved_by": "Người giám sát dự án (xác nhận trực tiếp trong phiên làm việc)",
+  "approved_at": "2026-10-27",
+  "scope": "GATE 2 — polygon lưu vực sông Ba đến tuyến đập Sông Ba Hạ",
+  "evidence": [
+    "outputs/maps/F01_basin_map.png",
+    "outputs/quality/basin_method.md",
+    "data/processed/basin_validation.csv"
+  ],
+  "approved_parameters": {
+    "outlet_hybas_id": "4121132660",
+    "n_subbasins": 82,
+    "area_km2_albers": 11160.6,
+    "reference_area_km2": 11115,
+    "deviation_pct": 0.41,
+    "dam_inside_polygon": true,
+    "powerhouse_inside_polygon": true,
+    "geometry_valid": true
+  },
+  "note": "Polygon được duyệt để dùng cho GATE 3+. Kênh tải CHIRPS qua FTP (ftp.chc.ucsb.edu, cùng sản phẩm CHIRPS v3.0 Final) và kênh nhiệt độ qua Open-Meteo (models=era5_land, cùng sản phẩm ERA5-Land) cũng đã được chấp thuận và phải ghi rõ trong tài liệu."
+}

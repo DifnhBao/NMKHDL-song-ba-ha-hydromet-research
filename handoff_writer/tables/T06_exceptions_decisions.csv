@@ -1,0 +1,36 @@
+﻿date,variable,value,flag,reason,decision
+2023-01-21,inflow_m3s,0,SUSPECT,Lưu lượng về hồ bằng 0,Giữ nguyên; đánh dấu để kiểm tra độ nhạy
+2025-11-07,inflow_m3s,6555.35,SUSPECT,Lưu lượng đột biến (>5.0× trung vị 7 ngày = 978.5),Giữ nguyên; đánh dấu để kiểm tra độ nhạy
+2023-01-21,upstream_level_m,0,SUSPECT,Mực nước thượng lưu bằng 0,Giữ nguyên; đánh dấu để kiểm tra độ nhạy
+2023-01-14,upstream_level_m,140.3,SUSPECT,"Mực nước thượng lưu ngoài khoảng [85.0, 116.5] m",Giữ nguyên; đánh dấu để kiểm tra độ nhạy
+2023-02-19,upstream_level_m,37.2,SUSPECT,"Mực nước thượng lưu ngoài khoảng [85.0, 116.5] m",Giữ nguyên; đánh dấu để kiểm tra độ nhạy
+2023-05-31,upstream_level_m,38.4,SUSPECT,"Mực nước thượng lưu ngoài khoảng [85.0, 116.5] m",Giữ nguyên; đánh dấu để kiểm tra độ nhạy
+2024-04-09,upstream_level_m,37.2,SUSPECT,"Mực nước thượng lưu ngoài khoảng [85.0, 116.5] m",Giữ nguyên; đánh dấu để kiểm tra độ nhạy
+2024-09-09,upstream_level_m,38.6,SUSPECT,"Mực nước thượng lưu ngoài khoảng [85.0, 116.5] m",Giữ nguyên; đánh dấu để kiểm tra độ nhạy
+2023-01-14,upstream_level_m,140.3,SUSPECT,Biến động mực nước đột ngột: 35.97 m/ngày,Giữ nguyên; đánh dấu để kiểm tra độ nhạy
+2023-01-15,upstream_level_m,104.48,SUSPECT,Biến động mực nước đột ngột: 35.82 m/ngày,Giữ nguyên; đánh dấu để kiểm tra độ nhạy
+2023-01-22,upstream_level_m,104.52,SUSPECT,Biến động mực nước đột ngột: 104.52 m/ngày,Giữ nguyên; đánh dấu để kiểm tra độ nhạy
+2023-02-19,upstream_level_m,37.2,SUSPECT,Biến động mực nước đột ngột: 66.70 m/ngày,Giữ nguyên; đánh dấu để kiểm tra độ nhạy
+2023-02-20,upstream_level_m,103.92,SUSPECT,Biến động mực nước đột ngột: 66.72 m/ngày,Giữ nguyên; đánh dấu để kiểm tra độ nhạy
+2023-05-31,upstream_level_m,38.4,SUSPECT,Biến động mực nước đột ngột: 65.08 m/ngày,Giữ nguyên; đánh dấu để kiểm tra độ nhạy
+2023-06-01,upstream_level_m,103.45,SUSPECT,Biến động mực nước đột ngột: 65.05 m/ngày,Giữ nguyên; đánh dấu để kiểm tra độ nhạy
+2024-04-09,upstream_level_m,37.2,SUSPECT,Biến động mực nước đột ngột: 66.53 m/ngày,Giữ nguyên; đánh dấu để kiểm tra độ nhạy
+2024-04-10,upstream_level_m,103.72,SUSPECT,Biến động mực nước đột ngột: 66.52 m/ngày,Giữ nguyên; đánh dấu để kiểm tra độ nhạy
+2024-09-09,upstream_level_m,38.6,SUSPECT,Biến động mực nước đột ngột: 64.39 m/ngày,Giữ nguyên; đánh dấu để kiểm tra độ nhạy
+2024-09-10,upstream_level_m,102.89,SUSPECT,Biến động mực nước đột ngột: 64.29 m/ngày,Giữ nguyên; đánh dấu để kiểm tra độ nhạy
+2023-01-21,downstream_level_m,0,SUSPECT,Mực nước hạ lưu bằng 0,Giữ nguyên; đánh dấu để kiểm tra độ nhạy
+2023-05-31,downstream_level_m,0,SUSPECT,Mực nước hạ lưu bằng 0,Giữ nguyên; đánh dấu để kiểm tra độ nhạy
+2024-09-09,downstream_level_m,0,SUSPECT,Mực nước hạ lưu bằng 0,Giữ nguyên; đánh dấu để kiểm tra độ nhạy
+2023-02-19,"upstream_level_m, downstream_level_m","up=37.2, down=103.91",INVALID_CONFIRMED,Mực nước thượng lưu nhỏ hơn hạ lưu — nghi đảo cột,Không sử dụng giá trị sai trong phép tính chính; giữ nguyên gốc
+2024-04-09,"upstream_level_m, downstream_level_m","up=37.2, down=103.72",INVALID_CONFIRMED,Mực nước thượng lưu nhỏ hơn hạ lưu — nghi đảo cột,Không sử dụng giá trị sai trong phép tính chính; giữ nguyên gốc
+2024-02-03,max_power_mw,707.0,INVALID_CONFIRMED,Công suất 707.0 MW vượt thiết kế 220 MW,Không sử dụng giá trị sai trong phép tính chính; giữ nguyên gốc
+2023-01-21,max_power_mw,0,SUSPECT,Công suất bằng 0,Giữ nguyên; đánh dấu để kiểm tra độ nhạy
+2023-08-06,max_power_mw,0,SUSPECT,Công suất bằng 0,Giữ nguyên; đánh dấu để kiểm tra độ nhạy
+2024-12-09,max_power_mw,0,SUSPECT,Công suất bằng 0,Giữ nguyên; đánh dấu để kiểm tra độ nhạy
+2025-12-06,max_power_mw,0,SUSPECT,Công suất bằng 0,Giữ nguyên; đánh dấu để kiểm tra độ nhạy
+2023-01-14,upstream_level_m,140.3,SUSPECT,"Mực nước 140,30 m vượt xa mực nước dâng bình thường 111,5 m — có thể lỗi nhập liệu hoặc đảo chữ số",Giữ nguyên; đánh dấu để kiểm tra độ nhạy
+2023-01-21,"inflow_m3s, upstream_level_m","inflow=0, up_level=0, energy=556328.7",SUSPECT,Nhiều biến thủy văn bằng 0 nhưng sản lượng điện dương — có thể thiếu dữ liệu,Giữ nguyên; đánh dấu để kiểm tra độ nhạy
+2023-05-31,downstream_level_m,0,SUSPECT,"Mực nước hạ lưu bằng 0 — bất thường; mực nước thượng lưu cũng bất thường (38,4 m < mực nước chết)",Giữ nguyên; đánh dấu để kiểm tra độ nhạy
+2024-09-09,upstream_level_m,38.6,SUSPECT,"Mực nước thượng lưu 38.6 m — bất thường, ngoài phạm vi vận hành",Giữ nguyên; đánh dấu để kiểm tra độ nhạy
+2025-11-19,inflow_m3s,12455.0,SUSPECT,Lưu lượng cực lớn 12455.0 m³/s — cần kiểm tra định nghĩa và nguồn; không loại bỏ chỉ vì giá trị cao. Có thể liên quan sự kiện lũ lớn tháng 11/2025,Giữ nguyên; đánh dấu để kiểm tra độ nhạy
+2025-11-20,inflow_m3s,12455.0,SUSPECT,Lưu lượng cực lớn 12455.0 m³/s — cần kiểm tra định nghĩa và nguồn; không loại bỏ chỉ vì giá trị cao. Có thể liên quan sự kiện lũ lớn tháng 11/2025,Giữ nguyên; đánh dấu để kiểm tra độ nhạy

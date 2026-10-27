@@ -1,0 +1,8 @@
+﻿variable,flag,n_records
+downstream_level_m,SUSPECT,4
+inflow_m3s,SUSPECT,4
+"inflow_m3s, upstream_level_m",SUSPECT,1
+max_power_mw,INVALID_CONFIRMED,1
+max_power_mw,SUSPECT,4
+upstream_level_m,SUSPECT,19
+"upstream_level_m, downstream_level_m",INVALID_CONFIRMED,2
