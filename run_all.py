@@ -301,6 +301,12 @@ def main():
             print(f"\n⏭️  Bỏ qua: {step['desc']}")
             continue
 
+        if step["gate"] >= 3:
+            approved, approval_msg = check_gate2_approval()
+            if not approved:
+                errors.append("GATE 2 approval required")
+                print("DUNG truoc GATE 3: " + approval_msg)
+                break
         code = run_script(step["script"], step["desc"])
         if code != 0:
             errors.append(step["script"])
