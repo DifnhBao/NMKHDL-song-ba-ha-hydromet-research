@@ -124,7 +124,7 @@ def create_T01():
             "spatial_resolution": "Điểm",
             "temporal_resolution": "Ngày",
             "period": "2023-01 – 2025-12",
-            "notes": "Một số ngày nghi đảo cột; đã gắn cờ INVALID_CONFIRMED"
+            "notes": "Một số ngày nghi đảo cột; đánh dấu SUSPECT, chưa xác minh độc lập"
         },
         {
             "variable": "Lượng mưa lưu vực (mm)",
@@ -134,7 +134,7 @@ def create_T01():
             "temporal_resolution": "Tháng (P0), Ngày rnl (P1)",
             "period": "2023-01 – 2025-12",
             "notes": ("Mưa ngày phân rã từ tổng 5 ngày bằng ERA5; "
-                      "trung bình có trọng số diện tích trên polygon lưu vực")
+                      "trung bình xấp xỉ pixel-mask + cos(vĩ độ); chưa tính diện tích giao pixel biên, đã kiểm tra độ nhạy 36 tháng")
         },
         {
             "variable": "Nhiệt độ không khí 2m (°C)",
