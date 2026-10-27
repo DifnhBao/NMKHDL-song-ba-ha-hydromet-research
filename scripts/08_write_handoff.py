@@ -250,7 +250,7 @@ def main():
 
 - Dữ liệu đã xử lý: `handoff_writer/selected_data/`
 - Hình: F01–F10 (`handoff_writer/figures/`)
-- Bảng: T01–T07 (`handoff_writer/tables/`)
+- Bảng: T01–T08 (gồm T02b; `handoff_writer/tables/`)
 - Thuyết minh: 01–07 (thư mục này)
 - Mã nguồn tái lập: `scripts/01`–`08`, `run_all.py`
 
@@ -404,10 +404,12 @@ Tổng số bản ghi ngoại lệ: **{len(exceptions)}**. Phân bố theo biế
 )}
 
 - Hai ngày **19–20/11/2025** có lưu lượng về hồ 12.455 m³/s — giá trị cực lớn,
-  được đánh dấu SUSPECT nhưng **không loại bỏ** vì có thể liên quan đợt lũ lớn.
-  Ảnh hưởng được kiểm tra bằng phân tích độ nhạy (T07).
-- Mực nước thượng lưu có các ngày 37,2–38,6 m (dưới mực nước chết) và một số
-  ngày đảo cột thượng/hạ lưu — đã gắn cờ, không dùng giá trị sai trong phép tính.
+  được giữ nguyên trong dữ liệu nguồn và đánh dấu SUSPECT; không dùng trong
+  trung bình tháng chính, nhưng đưa vào kịch bản độ nhạy T08. Kiểm tra loại
+  toàn bộ tháng có SUSPECT nằm tại T07. Chưa xác minh cực trị từ nguồn độc lập.
+- Mực nước thượng lưu có các ngày 37,2–38,6 m (bất thường) và một số
+  ngày nghi đảo cột thượng/hạ lưu — đã gắn cờ SUSPECT, loại khỏi thống kê chính
+  nhưng chưa xác nhận nguyên nhân hay tự sửa giá trị nguồn.
 
 ### 1.4. Độ phủ theo tháng
 
@@ -461,8 +463,9 @@ Tổng số bản ghi ngoại lệ: **{len(exceptions)}**. Phân bố theo biế
 
 - Các ngày SUSPECT tập trung ở tháng cực đoan (01/2023, 11/2025) nên ảnh hưởng
   trực tiếp đến tương quan RQ3 — đã định lượng bằng T07.
-- Sai lệch diện tích lưu vực {pct(float(basin['deviation_pct']), 2)} làm sai lệch
-  nhỏ lượng mưa trung bình lưu vực; không làm thay đổi kết luận định tính.
+- Sai lệch diện tích lưu vực {pct(float(basin['deviation_pct']), 2)} là phép kiểm tra diện tích,
+  **không tự nó đo được sai số lượng mưa**. Độ nhạy của phương pháp tính mưa
+  được đo riêng trên 36 tháng (xem `rainfall_spatial_sensitivity.csv`).
 - Chuỗi mưa ngày là sản phẩm phân rã, chỉ dùng bổ trợ; phân tích chính dùng
   bảng tháng.
 """
@@ -593,8 +596,10 @@ Tổng số bản ghi ngoại lệ: **{len(exceptions)}**. Phân bố theo biế
 
 ### Nhận định
 
-- Có liên hệ dương, mức trung bình đến khá, giữa mưa tháng và lưu lượng về hồ;
-  mối liên hệ có ý nghĩa thống kê ở mức α = 0,05 cho cả lag 0 và lag 1.
+- Có liên hệ thống kê dương ở quy mô tháng giữa mưa và lưu lượng công bố.
+  Các p-value trong T05 là kiểm định tương quan thông thường, **chưa hiệu chỉnh
+  tự tương quan chuỗi thời gian, tính mùa hay nhiều phép thử**; không dùng riêng
+  chúng làm bằng chứng về nhân quả hoặc thời gian trễ thủy văn.
 - Lag 1 có hệ số cao hơn lag 0, nhưng **không đủ căn cứ** để kết luận đó là thời
   gian trễ thủy văn thực; ba năm dữ liệu và tính mùa mạnh có thể tạo tương quan giả.
 - Loại tháng chứa ngày SUSPECT làm Pearson lag 0 giảm
@@ -656,11 +661,11 @@ Tổng số bản ghi ngoại lệ: **{len(exceptions)}**. Phân bố theo biế
   chịu điều tiết của các hồ thượng nguồn (An Khê, Ka Nak, Sông Ba Hạ).
 - Định nghĩa chính xác của trường `inflow_m3s` chưa được xác minh từ tài liệu
   công trình; có thể là lưu lượng vào hồ hoặc tổng lượng qua nhà máy.
-- {exc_by_flag.get('SUSPECT', 0)} bản ghi SUSPECT và
-  {exc_by_flag.get('INVALID_CONFIRMED', 0)} bản ghi INVALID_CONFIRMED.
+- {exc_by_flag.get('SUSPECT', 0)} lượt ngoại lệ SUSPECT (có thể nhiều lý do trên cùng ngày/biến) và
+  {exc_by_flag.get('INVALID_CONFIRMED', 0)} lượt ngoại lệ INVALID_CONFIRMED.
   Hai ngày 19–20/11/2025 có giá trị 12.455 m³/s chưa được xác minh độc lập.
-- Mực nước thượng lưu có lỗi cảm biến/nhập liệu (0 m; 37–38 m; đảo cột) —
-  đã loại khỏi phép tính nhưng làm giảm số ngày hợp lệ.
+- Mực nước thượng lưu có các giá trị bất thường (0 m; 37–38 m; nghi đảo cột),
+  được gắn SUSPECT và loại khỏi thống kê chính; nguyên nhân chưa xác minh độc lập.
 - Trường `release_m3s` (lưu lượng xả) bằng 0 trong **{n_release_zero}/{n_days} ngày**
   — bất thường về mặt vận hành; biến này chỉ dùng bổ trợ và chưa được xác minh
   định nghĩa, không dùng trong phân tích chính.
@@ -738,6 +743,7 @@ Ghi chú:
 | T05 | `tables/T05_correlation_results.csv` | Tương quan mưa – dòng chảy (lag, mùa, tercile) | — | Tính từ bảng tháng | 07 |
 | T06 | `tables/T06_exceptions_decisions.csv` | Danh sách ngoại lệ và quyết định xử lý | — | Sông Ba Hạ | 06 |
 | T07 | `tables/T07_sensitivity.csv` | Độ nhạy khi loại tháng chứa ngày SUSPECT | — | Tính từ bảng tháng | 07 |
+| T08 | `tables/T08_alternative_suspect_sensitivity.csv` | Độ nhạy lưu lượng khi giữ cả bốn ngày SUSPECT so với VALID_ONLY | — | Từ dữ liệu ngày và tháng | 10 |
 
 ## 3. Dữ liệu chọn lọc
 
