@@ -306,8 +306,9 @@ Chi tiết quy trình: `outputs/quality/basin_method.md`; bằng chứng số:
   chủ CHC, cùng sản phẩm và cùng phiên bản.
 - Độ phân giải: 0,05° (~5,5 km); tháng: sản phẩm monthly; ngày: sản phẩm `rnl`.
 - Phương pháp tổng hợp không gian: cắt raster theo polygon lưu vực, loại pixel
-  nodata (-9999), trung bình có trọng số **cos(vĩ độ)** theo diện tích ô:
-  `P_t = Σ(A_i × P_i,t) / Σ(A_i)`.
+  nodata (-9999), trung bình **xấp xỉ** theo pixel được mask chọn,
+  có trọng số cos(vĩ độ): `P_t ≈ Σ(cos(lat_i)P_i,t)/Σ(cos(lat_i))`.
+  **Không** tính phần diện tích giao raster–polygon ở các pixel biên.
 - Số pixel dùng cho mưa tháng: {int(rain_m['n_pixels'].median())}; mưa ngày:
   {int(rain_d['n_pixels'].median())}.
 - Không thay dữ liệu thiếu bằng 0.
