@@ -141,9 +141,9 @@ USED_CHANNEL = "HTTPS (data.chc.ucsb.edu)"
 
 
 def _weighted_mean_by_latitude(data, transform):
-    """Trung bình có trọng số diện tích thật (ô 0,05° có diện tích ∝ cos(lat)).
+    """Xấp xỉ trung bình diện tích theo pixel được chọn và cos(lat).
 
-    P_t = Σ(A_i × P_i,t) / Σ(A_i)
+    Pixel biên sử dụng mặt nạ nhị phân, chưa tính diện tích phần giao pixel.
     """
     valid = (data != CHIRPS_NODATA) & np.isfinite(data) & (data >= 0)
     if not valid.any():
@@ -158,7 +158,7 @@ def _weighted_mean_by_latitude(data, transform):
 
 
 def area_weighted_mean(tif_path, catchment_geom):
-    """Tính lượng mưa trung bình có trọng số diện tích cho lưu vực."""
+    """Tính trung bình xấp xỉ theo tâm pixel và cos(vĩ độ)."""
     with rasterio.open(tif_path) as src:
         out_image, out_transform = rio_mask(
             src, [mapping(catchment_geom)], crop=True, nodata=CHIRPS_NODATA
@@ -471,13 +471,13 @@ def write_method(monthly_df, daily_df, qa_df):
         "",
         "## 3. Phương pháp tính mưa trung bình lưu vực",
         "",
-        "Sử dụng trung bình có trọng số diện tích:",
+        "Sử dụng trung bình xấp xỉ theo các pixel mask chọn:",
         "",
         "```",
-        "P_t = Σ(A_i × P_i,t) / Σ(A_i)",
+        "P_t ≈ Σ(cos(lat_i) × P_i,t) / Σ(cos(lat_i))",
         "```",
         "",
-        "Trong đó A_i là diện tích phần ô raster giao với polygon lưu vực.",
+        "Mask nhị phân lấy pixel được chọn; chưa tính phần diện tích giao polygon tại pixel biên.",
         "Trọng số theo vĩ độ được áp dụng vì diện tích ô 0,05° tỷ lệ với cos(vĩ độ).",
         "Pixel ngoài polygon hoặc có giá trị nodata (-9999) bị loại, không thay bằng 0.",
         "",
