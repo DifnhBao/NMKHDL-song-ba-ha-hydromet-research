@@ -12,7 +12,7 @@
 
 </div>
 
-> **Trạng thái nghiên cứu:** Bộ dữ liệu và sản phẩm kỹ thuật GATE 1–6 đã được tạo, nhưng **CHƯA NGHIỆM THU KHOA HỌC CUỐI**. Polygon lưu vực được trưởng nhóm **CHẤP NHẬN CÓ ĐIỀU KIỆN**; đang chờ định lượng sai số mưa CHIRPS theo trọng số diện tích giao pixel. Hai kịch bản lưu lượng `SUSPECT` được giữ song song. Dữ liệu thô không có đủ trên GitHub để xác nhận chạy lại end-to-end. Xem [quyết định nghiệm thu](docs/OWNER_DECISIONS_2026-10-27.md) và [PR #9](../../pull/9).
+> **Trạng thái cập nhật 28/10/2026:** Trưởng nhóm đã chạy lại QA thủy văn từ 1.096 ngày, tích hợp GATE 4, phân tích GATE 5 và bàn giao GATE 6 thành công. GATE 3 sử dụng bộ khí tượng đã bàn giao (không tái tải đầy đủ từ raw trong vòng nghiệm thu này). Polygon lưu vực và phương pháp mưa CHIRPS xấp xỉ **ĐÃ ĐƯỢC CHẤP NHẬN CÓ ĐIỀU KIỆN** cho tiểu luận: so sánh 36 tháng với diện tích giao pixel cho sai lệch tương đối tuyệt đối trung bình **0,4477%**, tối đa **1,3952%**; chênh lệch 377/379 pixel chưa giải thích hết. Hai kịch bản lưu lượng `SUSPECT` có thể làm đảo thứ tự lag 0/lag 1. **ĐẠT RÀ SOÁT KỸ THUẬT CÓ ĐIỀU KIỆN, CHƯA NGHIỆM THU TOÀN ĐỀ TÀI, CHƯA MERGE PR #9.** Không có đủ dữ liệu thô trên GitHub để chứng minh tái lập end-to-end. Xem [quyết định nghiệm thu](docs/OWNER_DECISIONS_2026-10-27.md), [trạng thái QA](docs/QA_EXECUTION_STATUS_2026-10-27.md) và [PR #9](../../pull/9).
 
 ---
 
@@ -258,6 +258,8 @@ Tiến trình sẽ tuần tự:
 
 ### Kiểm tra trạng thái hệ thống
 
+> Lưu ý: dòng `✅` do `run_all.py --status` báo là trạng thái **tệp đầu ra/điều kiện xử lý**, không phải chứng nhận đã tái lập dữ liệu gốc từ đầu hoặc nghiệm thu khoa học cuối.
+
 Để kiểm tra nhanh hiện trạng hoàn thành của các cổng nghiệm thu mà không chạy lại tính toán:
 
 ```bash
@@ -277,7 +279,7 @@ python run_all.py --status
   ✅ GATE 5
   ✅ GATE 6
 
-  Phê duyệt GATE 2: ✅ Đã phê duyệt bởi Người giám sát dự án lúc 2026-10-27
+  Phê duyệt GATE 2: CONDITIONAL (chấp nhận polygon xấp xỉ; không phải nghiệm thu cuối)
 ```
 
 ---
@@ -354,7 +356,7 @@ Dự án thiết lập 6 chốt kiểm soát chất lượng tương ứng với
 | **GATE 3b** | `04_temperature_extraction.py` | `temperature_monthly.csv` (36 dòng)<br>`temperature_daily.csv` (1.096 dòng)<br>`temperature_method.md` | • Biến nhiệt độ không khí 2m (`2m_temperature`) ERA5-Land.<br>• Nội suy trên 95 điểm lưới $0,1^\circ$ bên trong lưu vực.<br>• Quy đổi chính xác Kelvin sang Celsius ($T - 273,15$).<br>• 0 giá trị khuyết thiếu; ghi rõ quy ước thời gian UTC. |
 | **GATE 4** | `05_data_integration.py` | `hydromet_daily.csv` (1.096 dòng)<br>`hydromet_monthly.csv` (36 dòng)<br>`integration_qa.csv`<br>`data_dictionary.md` | • Đạt tuyệt đối **11/11 tiêu chí kiểm tra QA**.<br>• Không trùng khóa thời gian `date` hoặc `year_month`.<br>• Không dùng số 0 thay thế giá trị thiếu; đủ cờ chất lượng.<br>• Bảng tháng có tỷ lệ bao phủ dữ liệu hợp lệ $\ge 90\%$. |
 | **GATE 5** | `06_exploratory_analysis.py`<br>`07_rainfall_runoff_analysis.py` | Bảng: `T01`–`T07`, `T02b`<br>Hình: `F02`–`F10` | • Giải quyết trọn vẹn 3 câu hỏi nghiên cứu RQ1, RQ2, RQ3.<br>• Đầy đủ tương quan Lag 0, Lag 1, Deseasonalised, phân mùa và terciles.<br>• Có phân tích độ nhạy (T07) khi loại bỏ tháng ngoại lệ.<br>• Biểu đồ đạt chuẩn xuất bản: có nguồn, đơn vị, độ phân giải $\ge 200\text{ dpi}$. |
-| **GATE 6** | `08_write_handoff.py`<br>`run_all.py` | Thư mục `handoff_writer/`<br>(7 docs, 10 figures, 8 tables, 10 datasets) | • Đồng bộ đủ 27 tệp ấn phẩm vào `handoff_writer/`.<br>• 7 tài liệu Markdown được sinh tự động trực tiếp từ số liệu bảng sạch.<br>• Khớp số liệu 100% giữa văn bản, bảng biểu và biểu đồ.<br>• Đầy đủ tài liệu trích dẫn tham khảo chuẩn học thuật. |
+| **GATE 6** | `08_write_handoff.py`<br>`run_all.py` | Thư mục `handoff_writer/`<br>(7 docs chính, 10 figures, T01–T08 kèm T02b, dữ liệu chọn lọc) | • Kiểm tra 27 thao tác sao chép của GATE 6, không thiếu tệp; T08 do script 10 tạo riêng.<br>• 7 tài liệu Markdown được sinh tự động trực tiếp từ số liệu bảng sạch.<br>• Khớp số liệu 100% giữa văn bản, bảng biểu và biểu đồ.<br>• Đầy đủ tài liệu trích dẫn tham khảo chuẩn học thuật. |
 
 ---
 
@@ -521,6 +523,6 @@ Theo đúng tinh thần của [DAC_TA_NGHIEN_CUU_V1.0.md](docs/DAC_TA_NGHIEN_CUU
 </div>
 
 
-## Trạng thái nghiệm thu hiện hành (27/10/2026)
+## Trạng thái nghiệm thu hiện hành (cập nhật 28/10/2026)
 
-**Không dùng README này làm chứng nhận hoàn tất.** Quyết định mới nhất của trưởng nhóm nằm tại [`docs/OWNER_DECISIONS_2026-10-27.md`](docs/OWNER_DECISIONS_2026-10-27.md). Polygon được sử dụng có điều kiện; thuật toán mưa hiện tại là xấp xỉ theo mask nhị phân và cos(vĩ độ), phải so sánh với trọng số diện tích giao raster trước khi chốt. Bảng T08 thể hiện hai kịch bản lưu lượng, không suy ra nguyên nhân–kết quả hoặc độ trễ thực. Đợt chỉnh sửa cuối đang ở **PR #9 (Draft)**, `main` chưa phải bản báo cáo nghiệm thu cuối.
+**Không dùng README này làm chứng nhận nghiệm thu toàn đề tài.** Quyết định trưởng nhóm tại [`docs/OWNER_DECISIONS_2026-10-27.md`](docs/OWNER_DECISIONS_2026-10-27.md): polygon và phương pháp mưa pixel-mask + cos(vĩ độ) chỉ **chấp nhận có điều kiện** cho nghiên cứu nhập môn. Đã thực hiện so sánh với fractional pixel overlap trên 36 tháng, nhưng vẫn còn chênh lệch 377/379 pixel và chưa có khả năng tái lập end-to-end mọi nguồn raw. Bảng T08 báo cáo cả hai kịch bản lưu lượng, không suy ra nhân quả hoặc độ trễ thực. Đã đối chiếu lại dữ liệu chính và bộ bàn giao trên nhánh `review/conditional-qa-20261027`; **PR #9 vẫn Draft**, chưa merge vào `main`. Người viết báo cáo có thể bắt đầu từ bộ bàn giao có điều kiện sau khi xác nhận nhánh/tài liệu làm việc, không tự coi dữ liệu hiện hành ở `main` là kết quả QA cuối cùng.
