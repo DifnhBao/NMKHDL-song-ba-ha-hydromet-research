@@ -157,7 +157,7 @@
 | F06 | Mực nước thượng lưu | Dao động trong dải vận hành, có đoạn bất thường đã loại |
 | F07 | Mưa và lưu lượng cùng trục thời gian | Hai chuỗi cùng pha ở quy mô tháng |
 | F08 | Scatter mưa – lưu lượng | Xu hướng dương, phân tán rộng |
-| F09 | So sánh tương quan lag 0 / lag 1 | Hệ số lag 1 cao hơn, p-value đều nhỏ |
+| F09 | Độ nhạy Pearson theo ba kịch bản SUSPECT | Thứ tự lag 0/lag 1 đảo khi giữ SUSPECT; không suy ra độ trễ thực |
 | F10 | Phân bố lưu lượng | Lệch phải mạnh, đuôi dài về phía giá trị lớn |
 
 

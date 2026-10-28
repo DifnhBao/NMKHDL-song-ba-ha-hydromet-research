@@ -12,7 +12,7 @@
 | F06 | `figures/F06_upstream_level.png` | Mực nước thượng lưu sau kiểm định | m | Sông Ba Hạ | 06 | RQ2 |
 | F07 | `figures/F07_rainfall_inflow_comparison.png` | So sánh mưa tháng và lưu lượng về hồ | mm, m³/s | CHIRPS; Sông Ba Hạ | 07 | RQ3 |
 | F08 | `figures/F08_scatter_rainfall_inflow.png` | Scatter mưa – lưu lượng theo tháng | mm, m³/s | CHIRPS; Sông Ba Hạ | 07 | RQ3 |
-| F09 | `figures/F09_correlation_comparison.png` | So sánh tương quan lag 0 và lag 1 (kèm p-value) | — | Tính từ bảng tháng | 07 | RQ3 |
+| F09 | `figures/F09_correlation_comparison.png` | Độ nhạy Pearson theo ba kịch bản: VALID_ONLY, loại tháng SUSPECT, giữ SUSPECT như nguồn | — | T05, T07, T08 | 12 (sau 10) | RQ3 |
 | F10 | `figures/F10_inflow_distribution.png` | Phân bố lưu lượng (histogram log + boxplot theo năm) | m³/s | Sông Ba Hạ | 06 | RQ2 (bổ sung) |
 
 Ghi chú:
