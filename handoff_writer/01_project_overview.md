@@ -40,7 +40,7 @@
 
 - Dữ liệu đã xử lý: `handoff_writer/selected_data/`
 - Hình: F01–F10 (`handoff_writer/figures/`)
-- Bảng: T01–T07 (`handoff_writer/tables/`)
+- Bảng: T01–T08 (gồm T02b; `handoff_writer/tables/`)
 - Thuyết minh: 01–07 (thư mục này)
 - Mã nguồn tái lập: `scripts/01`–`08`, `run_all.py`
 

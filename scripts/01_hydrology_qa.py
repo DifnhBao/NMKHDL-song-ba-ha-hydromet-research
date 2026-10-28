@@ -206,13 +206,13 @@ def qa_per_variable(df):
     )
     mask_swap = both_valid & (df["upstream_level_m"] < df["downstream_level_m"])
     for idx in df.index[mask_swap]:
-        df.loc[idx, "upstream_level_quality"] = "INVALID_CONFIRMED"
-        df.loc[idx, "downstream_level_quality"] = "INVALID_CONFIRMED"
+        df.loc[idx, "upstream_level_quality"] = "SUSPECT"
+        df.loc[idx, "downstream_level_quality"] = "SUSPECT"
         exceptions.append({
             "date": df.loc[idx, "date"], "variable": "upstream_level_m, downstream_level_m",
             "value": f"up={df.loc[idx, 'upstream_level_m']}, down={df.loc[idx, 'downstream_level_m']}",
-            "flag": "INVALID_CONFIRMED",
-            "reason": "Mực nước thượng lưu nhỏ hơn hạ lưu — nghi đảo cột"
+            "flag": "SUSPECT",
+            "reason": "Mực nước thượng lưu nhỏ hơn hạ lưu — nghi đảo cột, chưa có xác minh nguồn độc lập"
         })
 
     # ── max_power_mw ──────────────────────────────────────────────────
@@ -508,7 +508,7 @@ def write_quality_notes(struct_issues, exceptions_df, qa_summary, energy_issues)
         "- Chưa xác minh được ý nghĩa thời gian chính xác của lưu lượng công bố "
         "(trung bình ngày hay giá trị tại thời điểm xác định).",
         "- Các ngày nghi đảo cột (19/02/2023, 09/04/2024) được đánh dấu "
-        "INVALID_CONFIRMED dựa trên bằng chứng up < down.",
+        "SUSPECT vì mới có dấu hiệu up < down, chưa có xác nhận từ nguồn độc lập.",
         "- Công suất 707 MW ngày 03/02/2024 vượt thiết kế; nghi lỗi nhập liệu.",
         "",
     ]
@@ -537,6 +537,9 @@ def main():
     if struct_issues:
         for iss in struct_issues:
             print(f"  ⚠️  {iss}")
+        print("  ❌ GATE 1 KHÔNG ĐẠT: dữ liệu nguồn thiếu hoặc sai cấu trúc.")
+        print("  ❌ Dừng trước khi ghi đè dữ liệu processed và báo cáo QA.")
+        return 1
     else:
         print("  ✅ Cấu trúc hợp lệ: 1.096 ngày, không trùng, liên tục.")
 

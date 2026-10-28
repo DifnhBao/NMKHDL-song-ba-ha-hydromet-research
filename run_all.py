@@ -113,7 +113,8 @@ def check_gate2_approval():
         return False, f"{APPROVAL_FILE} chưa có \"approved\": true"
     if not data.get("approved_by") or not data.get("approved_at"):
         return False, f"{APPROVAL_FILE} thiếu approved_by/approved_at"
-    return True, f"Đã phê duyệt bởi {data['approved_by']} lúc {data['approved_at']}"
+    scope = data.get("approval_status", "UNKNOWN")
+    return True, f"Được phép dùng polygon (trạng thái {scope}); {data['approved_by']} lúc {data['approved_at']}. Không đồng nghĩa nghiệm thu cuối."
 
 
 def run_script(script_name, desc):
@@ -307,6 +308,16 @@ def main():
                 errors.append("GATE 2 approval required")
                 print("DUNG truoc GATE 3: " + approval_msg)
                 break
+        # Generate the two reviewed inflow scenarios immediately before the writer handoff.
+        if step["gate"] == 6:
+            sens_code = run_script("10_suspect_sensitivity.py", "QA — hai kịch bản SUSPECT")
+            if sens_code != 0:
+                errors.append("10_suspect_sensitivity.py")
+                break
+            chart_code = run_script("12_plot_report_F09.py", "QA — F09 tái lập từ T05/T07/T08")
+            if chart_code != 0:
+                errors.append("12_plot_report_F09.py")
+                break
         code = run_script(step["script"], step["desc"])
         if code != 0:
             errors.append(step["script"])
@@ -340,7 +351,7 @@ def main():
     print("  ✅ Toàn bộ pipeline hoàn thành thành công!")
     print("\n  GATE 6 — Bàn giao hoàn tất:")
     print("  1. handoff_writer/figures/ — hình F01–F10")
-    print("  2. handoff_writer/tables/  — bảng T01–T07")
+    print("  2. handoff_writer/tables/  — bảng T01–T08 (kèm T02b)")
     print("  3. handoff_writer/selected_data/ — dữ liệu chính")
     print("  4. handoff_writer/*.md — tài liệu cho người viết báo cáo")
     return 0

@@ -106,7 +106,8 @@ def _gate2_status():
     except Exception:
         return "tệp phê duyệt GATE 2 không đọc được"
     if data.get("approved") is True:
-        return f"đã phê duyệt bởi {data.get('approved_by', 'không rõ')}"
+        state = data.get("approval_status", "UNKNOWN")
+        return f"cho phép sử dụng polygon ({state}); chưa xác nhận toàn bộ phương pháp mưa"
     return "chưa được phê duyệt"
 
 

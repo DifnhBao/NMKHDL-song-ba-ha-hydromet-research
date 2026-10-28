@@ -11,8 +11,8 @@
 ## 2. Tổng hợp ngoại lệ
 
 - Tổng số bản ghi ngoại lệ: **35**
-  - SUSPECT: 32
-  - INVALID_CONFIRMED: 3
+  - SUSPECT: 34
+  - INVALID_CONFIRMED: 1
 
 ## 3. Danh sách ngày bắt buộc đối chiếu
 
@@ -33,8 +33,8 @@
 | 2023-01-21 | Mực nước hạ lưu bằng 0 | SUSPECT |
 | 2023-05-31 | Mực nước hạ lưu bằng 0 | SUSPECT |
 | 2024-09-09 | Mực nước hạ lưu bằng 0 | SUSPECT |
-| 2023-02-19 | Mực nước thượng lưu nhỏ hơn hạ lưu — nghi đảo cột | INVALID_CONFIRMED |
-| 2024-04-09 | Mực nước thượng lưu nhỏ hơn hạ lưu — nghi đảo cột | INVALID_CONFIRMED |
+| 2023-02-19 | Mực nước thượng lưu nhỏ hơn hạ lưu — nghi đảo cột, chưa có xác minh nguồn độc lậ | SUSPECT |
+| 2024-04-09 | Mực nước thượng lưu nhỏ hơn hạ lưu — nghi đảo cột, chưa có xác minh nguồn độc lậ | SUSPECT |
 | 2024-02-03 | Công suất 707.0 MW vượt thiết kế 220 MW | INVALID_CONFIRMED |
 | 2023-01-21 | Công suất bằng 0 | SUSPECT |
 | 2023-01-14 | Mực nước 140,30 m vượt xa mực nước dâng bình thường 111,5 m — có thể lỗi nhập li | SUSPECT |
@@ -63,5 +63,5 @@
 ## 7. Giới hạn
 
 - Chưa xác minh được ý nghĩa thời gian chính xác của lưu lượng công bố (trung bình ngày hay giá trị tại thời điểm xác định).
-- Các ngày nghi đảo cột (19/02/2023, 09/04/2024) được đánh dấu INVALID_CONFIRMED dựa trên bằng chứng up < down.
+- Các ngày nghi đảo cột (19/02/2023, 09/04/2024) được đánh dấu SUSPECT vì mới có dấu hiệu up < down, chưa có xác nhận từ nguồn độc lập.
 - Công suất 707 MW ngày 03/02/2024 vượt thiết kế; nghi lỗi nhập liệu.

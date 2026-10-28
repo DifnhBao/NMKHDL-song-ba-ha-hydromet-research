@@ -5,8 +5,8 @@
 | variable | source | type | spatial_resolution | temporal_resolution | period | notes |
 |---|---|---|---|---|---|---|
 | Lưu lượng nước về hồ (m³/s) | Website Sông Ba Hạ (sbh.vn) | Số liệu công trình | Điểm (tại đập) | Ngày | 2023-01 – 2025-12 | Chưa xác minh ý nghĩa thời gian (trung bình ngày vs tức thời) |
-| Mực nước thượng/hạ lưu (m) | Website Sông Ba Hạ (sbh.vn) | Số liệu công trình | Điểm | Ngày | 2023-01 – 2025-12 | Một số ngày nghi đảo cột; đã gắn cờ INVALID_CONFIRMED |
-| Lượng mưa lưu vực (mm) | CHIRPS v3.0 Final monthly | Vệ tinh kết hợp quan trắc | ~0.05° (~5 km) | Tháng (P0), Ngày rnl (P1) | 2023-01 – 2025-12 | Mưa ngày phân rã từ tổng 5 ngày bằng ERA5; xấp xỉ theo pixel trong polygon và cos(vĩ độ) |
+| Mực nước thượng/hạ lưu (m) | Website Sông Ba Hạ (sbh.vn) | Số liệu công trình | Điểm | Ngày | 2023-01 – 2025-12 | Một số ngày nghi đảo cột; đánh dấu SUSPECT, chưa xác minh độc lập |
+| Lượng mưa lưu vực (mm) | CHIRPS v3.0 Final monthly | Vệ tinh kết hợp quan trắc | ~0.05° (~5 km) | Tháng (P0), Ngày rnl (P1) | 2023-01 – 2025-12 | Mưa ngày phân rã từ tổng 5 ngày bằng ERA5; trung bình xấp xỉ pixel-mask + cos(vĩ độ); chưa tính diện tích giao pixel biên, đã kiểm tra độ nhạy 36 tháng |
 | Nhiệt độ không khí 2m (°C) | ERA5-Land via Open-Meteo Archive API (mean of daily means) | Tái phân tích | ~0.1° (~9 km) | Tháng (P0), Ngày (P1) | 2023-01 – 2025-12 | Trạng thái dữ liệu: OK |
 | Ranh giới lưu vực | HydroBASINS v1c (HydroSHEDS/WWF) | Dữ liệu địa lý toàn cầu | ~15 arc-second | Tĩnh | — | Diện tích tham khảo 11.115 km²; cửa ra theo OSM way/480785944 |
 
@@ -34,7 +34,7 @@
 - Kiểm tra: `dam_inside_polygon = True`,
   `powerhouse_inside_polygon = True`,
   `geometry_valid = True`.
-- Trạng thái phê duyệt: **Người giám sát dự án (xác nhận trực tiếp trong phiên làm việc)**.
+- Trạng thái phê duyệt: **CONDITIONAL** — chấp nhận polygon có điều kiện, không phải nghiệm thu toàn bộ đề tài.
 
 Chi tiết quy trình: `outputs/quality/basin_method.md`; bằng chứng số:
 `data/processed/basin_validation.csv`.
@@ -47,8 +47,9 @@ Chi tiết quy trình: `outputs/quality/basin_method.md`; bằng chứng số:
   chủ CHC, cùng sản phẩm và cùng phiên bản.
 - Độ phân giải: 0,05° (~5,5 km); tháng: sản phẩm monthly; ngày: sản phẩm `rnl`.
 - Phương pháp tổng hợp không gian: cắt raster theo polygon lưu vực, loại pixel
-  nodata (-9999), xấp xỉ trung bình theo các pixel mặt nạ chọn, trọng số **cos(vĩ độ)**; chưa tính diện tích giao pixel biên theo V1.1:
-  `P_t = Σ(A_i × P_i,t) / Σ(A_i)`.
+  nodata (-9999), trung bình **xấp xỉ** theo pixel được mask chọn,
+  có trọng số cos(vĩ độ): `P_t ≈ Σ(cos(lat_i)P_i,t)/Σ(cos(lat_i))`.
+  **Không** tính phần diện tích giao raster–polygon ở các pixel biên.
 - Số pixel dùng cho mưa tháng: 377; mưa ngày:
   379.
 - Không thay dữ liệu thiếu bằng 0.
@@ -97,3 +98,7 @@ Chi tiết quy trình: `outputs/quality/basin_method.md`; bằng chứng số:
 | `scripts/07_rainfall_runoff_analysis.py` | GATE 5b — RQ3 |
 | `scripts/08_write_handoff.py` | GATE 6 — sinh tài liệu bàn giao |
 | `run_all.py` | Điều phối toàn bộ pipeline |
+
+
+## Lưu ý nghiệm thu không gian
+Polygon CHẤP NHẬN CÓ ĐIỀU KIỆN. Trưởng nhóm đã CHẤP NHẬN CÓ ĐIỀU KIỆN phương pháp tính mưa xấp xỉ mask pixel nhị phân và cos(vĩ độ) cho bài tiểu luận. Phương pháp này không tính phần giao các ô biên. Kiểm tra 36 tháng với trọng số diện tích giao: trung bình |Δ%|=0.4477%, lớn nhất |Δ%|=1.3952%. Chuỗi cũ dùng [377] pixel, tái tính dùng [379]; chưa xác định dứt điểm nguyên nhân. Xem outputs/quality/rainfall_spatial_sensitivity.csv.

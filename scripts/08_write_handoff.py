@@ -250,7 +250,7 @@ def main():
 
 - Dữ liệu đã xử lý: `handoff_writer/selected_data/`
 - Hình: F01–F10 (`handoff_writer/figures/`)
-- Bảng: T01–T07 (`handoff_writer/tables/`)
+- Bảng: T01–T08 (gồm T02b; `handoff_writer/tables/`)
 - Thuyết minh: 01–07 (thư mục này)
 - Mã nguồn tái lập: `scripts/01`–`08`, `run_all.py`
 
@@ -293,7 +293,7 @@ def main():
 - Kiểm tra: `dam_inside_polygon = {basin['dam_inside_polygon']}`,
   `powerhouse_inside_polygon = {basin['powerhouse_inside_polygon']}`,
   `geometry_valid = {basin['geometry_valid']}`.
-- Trạng thái phê duyệt: **{approval.get('approved_by', 'PENDING_SUPERVISOR_APPROVAL')}**.
+- Trạng thái phê duyệt: **{approval.get('approval_status', 'PENDING_SUPERVISOR_APPROVAL')}** — chấp nhận polygon có điều kiện, không phải nghiệm thu toàn bộ đề tài.
 
 Chi tiết quy trình: `outputs/quality/basin_method.md`; bằng chứng số:
 `data/processed/basin_validation.csv`.
@@ -306,8 +306,9 @@ Chi tiết quy trình: `outputs/quality/basin_method.md`; bằng chứng số:
   chủ CHC, cùng sản phẩm và cùng phiên bản.
 - Độ phân giải: 0,05° (~5,5 km); tháng: sản phẩm monthly; ngày: sản phẩm `rnl`.
 - Phương pháp tổng hợp không gian: cắt raster theo polygon lưu vực, loại pixel
-  nodata (-9999), trung bình có trọng số **cos(vĩ độ)** theo diện tích ô:
-  `P_t = Σ(A_i × P_i,t) / Σ(A_i)`.
+  nodata (-9999), trung bình **xấp xỉ** theo pixel được mask chọn,
+  có trọng số cos(vĩ độ): `P_t ≈ Σ(cos(lat_i)P_i,t)/Σ(cos(lat_i))`.
+  **Không** tính phần diện tích giao raster–polygon ở các pixel biên.
 - Số pixel dùng cho mưa tháng: {int(rain_m['n_pixels'].median())}; mưa ngày:
   {int(rain_d['n_pixels'].median())}.
 - Không thay dữ liệu thiếu bằng 0.
@@ -386,8 +387,9 @@ Chi tiết quy trình: `outputs/quality/basin_method.md`; bằng chứng số:
 Tổng số bản ghi ngoại lệ: **{len(exceptions)}**. Phân bố theo biến:
 {", ".join(f"{k} ({v})" for k, v in exc_by_var.items())}.
 
-- `SUSPECT`: {exc_by_flag.get('SUSPECT', 0)} bản ghi — giữ nguyên giá trị, đánh dấu
-  để kiểm tra độ nhạy, không loại khỏi phân tích chính.
+- `SUSPECT`: {exc_by_flag.get('SUSPECT', 0)} lượt ngoại lệ — bảo toàn giá trị nguồn;
+  loại khỏi phép tính trung bình tháng chính của biến tương ứng nếu chưa được xác minh,
+  đồng thời giữ kịch bản bao gồm SUSPECT để kiểm tra độ nhạy.
 - `INVALID_CONFIRMED`: {exc_by_flag.get('INVALID_CONFIRMED', 0)} bản ghi — không dùng
   trong phép tính chính, giữ nguyên bản gốc.
 
@@ -402,10 +404,12 @@ Tổng số bản ghi ngoại lệ: **{len(exceptions)}**. Phân bố theo biế
 )}
 
 - Hai ngày **19–20/11/2025** có lưu lượng về hồ 12.455 m³/s — giá trị cực lớn,
-  được đánh dấu SUSPECT nhưng **không loại bỏ** vì có thể liên quan đợt lũ lớn.
-  Ảnh hưởng được kiểm tra bằng phân tích độ nhạy (T07).
-- Mực nước thượng lưu có các ngày 37,2–38,6 m (dưới mực nước chết) và một số
-  ngày đảo cột thượng/hạ lưu — đã gắn cờ, không dùng giá trị sai trong phép tính.
+  được giữ nguyên trong dữ liệu nguồn và đánh dấu SUSPECT; không dùng trong
+  trung bình tháng chính, nhưng đưa vào kịch bản độ nhạy T08. Kiểm tra loại
+  toàn bộ tháng có SUSPECT nằm tại T07. Chưa xác minh cực trị từ nguồn độc lập.
+- Mực nước thượng lưu có các ngày 37,2–38,6 m (bất thường) và một số
+  ngày nghi đảo cột thượng/hạ lưu — đã gắn cờ SUSPECT, loại khỏi thống kê chính
+  nhưng chưa xác nhận nguyên nhân hay tự sửa giá trị nguồn.
 
 ### 1.4. Độ phủ theo tháng
 
@@ -459,8 +463,9 @@ Tổng số bản ghi ngoại lệ: **{len(exceptions)}**. Phân bố theo biế
 
 - Các ngày SUSPECT tập trung ở tháng cực đoan (01/2023, 11/2025) nên ảnh hưởng
   trực tiếp đến tương quan RQ3 — đã định lượng bằng T07.
-- Sai lệch diện tích lưu vực {pct(float(basin['deviation_pct']), 2)} làm sai lệch
-  nhỏ lượng mưa trung bình lưu vực; không làm thay đổi kết luận định tính.
+- Sai lệch diện tích lưu vực {pct(float(basin['deviation_pct']), 2)} là phép kiểm tra diện tích,
+  **không tự nó đo được sai số lượng mưa**. Độ nhạy của phương pháp tính mưa
+  được đo riêng trên 36 tháng (xem `rainfall_spatial_sensitivity.csv`).
 - Chuỗi mưa ngày là sản phẩm phân rã, chỉ dùng bổ trợ; phân tích chính dùng
   bảng tháng.
 """
@@ -591,8 +596,10 @@ Tổng số bản ghi ngoại lệ: **{len(exceptions)}**. Phân bố theo biế
 
 ### Nhận định
 
-- Có liên hệ dương, mức trung bình đến khá, giữa mưa tháng và lưu lượng về hồ;
-  mối liên hệ có ý nghĩa thống kê ở mức α = 0,05 cho cả lag 0 và lag 1.
+- Có liên hệ thống kê dương ở quy mô tháng giữa mưa và lưu lượng công bố.
+  Các p-value trong T05 là kiểm định tương quan thông thường, **chưa hiệu chỉnh
+  tự tương quan chuỗi thời gian, tính mùa hay nhiều phép thử**; không dùng riêng
+  chúng làm bằng chứng về nhân quả hoặc thời gian trễ thủy văn.
 - Lag 1 có hệ số cao hơn lag 0, nhưng **không đủ căn cứ** để kết luận đó là thời
   gian trễ thủy văn thực; ba năm dữ liệu và tính mùa mạnh có thể tạo tương quan giả.
 - Loại tháng chứa ngày SUSPECT làm Pearson lag 0 giảm
@@ -616,7 +623,7 @@ Tổng số bản ghi ngoại lệ: **{len(exceptions)}**. Phân bố theo biế
 | F06 | Mực nước thượng lưu | Dao động trong dải vận hành, có đoạn bất thường đã loại |
 | F07 | Mưa và lưu lượng cùng trục thời gian | Hai chuỗi cùng pha ở quy mô tháng |
 | F08 | Scatter mưa – lưu lượng | Xu hướng dương, phân tán rộng |
-| F09 | So sánh tương quan lag 0 / lag 1 | Hệ số lag 1 cao hơn, p-value đều nhỏ |
+| F09 | Độ nhạy Pearson theo ba kịch bản SUSPECT | Thứ tự lag 0/lag 1 đảo khi giữ SUSPECT; không suy ra độ trễ thực |
 | F10 | Phân bố lưu lượng | Lệch phải mạnh, đuôi dài về phía giá trị lớn |
 """
     (HANDOFF / "04_results_and_interpretation.md").write_text(d04, encoding="utf-8")
@@ -654,11 +661,11 @@ Tổng số bản ghi ngoại lệ: **{len(exceptions)}**. Phân bố theo biế
   chịu điều tiết của các hồ thượng nguồn (An Khê, Ka Nak, Sông Ba Hạ).
 - Định nghĩa chính xác của trường `inflow_m3s` chưa được xác minh từ tài liệu
   công trình; có thể là lưu lượng vào hồ hoặc tổng lượng qua nhà máy.
-- {exc_by_flag.get('SUSPECT', 0)} bản ghi SUSPECT và
-  {exc_by_flag.get('INVALID_CONFIRMED', 0)} bản ghi INVALID_CONFIRMED.
+- {exc_by_flag.get('SUSPECT', 0)} lượt ngoại lệ SUSPECT (có thể nhiều lý do trên cùng ngày/biến) và
+  {exc_by_flag.get('INVALID_CONFIRMED', 0)} lượt ngoại lệ INVALID_CONFIRMED.
   Hai ngày 19–20/11/2025 có giá trị 12.455 m³/s chưa được xác minh độc lập.
-- Mực nước thượng lưu có lỗi cảm biến/nhập liệu (0 m; 37–38 m; đảo cột) —
-  đã loại khỏi phép tính nhưng làm giảm số ngày hợp lệ.
+- Mực nước thượng lưu có các giá trị bất thường (0 m; 37–38 m; nghi đảo cột),
+  được gắn SUSPECT và loại khỏi thống kê chính; nguyên nhân chưa xác minh độc lập.
 - Trường `release_m3s` (lưu lượng xả) bằng 0 trong **{n_release_zero}/{n_days} ngày**
   — bất thường về mặt vận hành; biến này chỉ dùng bổ trợ và chưa được xác minh
   định nghĩa, không dùng trong phân tích chính.
@@ -714,7 +721,7 @@ Tổng số bản ghi ngoại lệ: **{len(exceptions)}**. Phân bố theo biế
 | F06 | `figures/F06_upstream_level.png` | Mực nước thượng lưu sau kiểm định | m | Sông Ba Hạ | 06 | RQ2 |
 | F07 | `figures/F07_rainfall_inflow_comparison.png` | So sánh mưa tháng và lưu lượng về hồ | mm, m³/s | CHIRPS; Sông Ba Hạ | 07 | RQ3 |
 | F08 | `figures/F08_scatter_rainfall_inflow.png` | Scatter mưa – lưu lượng theo tháng | mm, m³/s | CHIRPS; Sông Ba Hạ | 07 | RQ3 |
-| F09 | `figures/F09_correlation_comparison.png` | So sánh tương quan lag 0 và lag 1 (kèm p-value) | — | Tính từ bảng tháng | 07 | RQ3 |
+| F09 | `figures/F09_correlation_comparison.png` | Độ nhạy Pearson theo ba kịch bản: VALID_ONLY, loại tháng SUSPECT, giữ SUSPECT như nguồn | — | T05, T07, T08 | 12 (sau 10) | RQ3 |
 | F10 | `figures/F10_inflow_distribution.png` | Phân bố lưu lượng (histogram log + boxplot theo năm) | m³/s | Sông Ba Hạ | 06 | RQ2 (bổ sung) |
 
 Ghi chú:
@@ -736,6 +743,7 @@ Ghi chú:
 | T05 | `tables/T05_correlation_results.csv` | Tương quan mưa – dòng chảy (lag, mùa, tercile) | — | Tính từ bảng tháng | 07 |
 | T06 | `tables/T06_exceptions_decisions.csv` | Danh sách ngoại lệ và quyết định xử lý | — | Sông Ba Hạ | 06 |
 | T07 | `tables/T07_sensitivity.csv` | Độ nhạy khi loại tháng chứa ngày SUSPECT | — | Tính từ bảng tháng | 07 |
+| T08 | `tables/T08_alternative_suspect_sensitivity.csv` | Độ nhạy lưu lượng khi giữ cả bốn ngày SUSPECT so với VALID_ONLY | — | Từ dữ liệu ngày và tháng | 10 |
 
 ## 3. Dữ liệu chọn lọc
 
@@ -827,6 +835,59 @@ Ghi chú:
         (HANDOFF / "selected_data").mkdir(parents=True, exist_ok=True)
         (HANDOFF / "selected_data" / "data_dictionary.md").write_text(
             ddict.read_text(encoding="utf-8"), encoding="utf-8")
+
+    # Review appendix: read the actual recorded spatial-sensitivity evidence.
+    rainfall_audit_path = QA / "rainfall_spatial_sensitivity.csv"
+    if not rainfall_audit_path.exists():
+        raise RuntimeError("Missing rainfall_spatial_sensitivity.csv: rainfall method not auditable")
+    spatial_audit = pd.read_csv(rainfall_audit_path)
+    if len(spatial_audit) != 36 or not spatial_audit["delta_pct"].notna().all():
+        raise RuntimeError("CHIRPS spatial audit must cover 36 valid months")
+    mean_abs_bias = spatial_audit["delta_pct"].abs().mean()
+    max_abs_bias = spatial_audit["delta_pct"].abs().max()
+    recalculated_pixels = sorted(spatial_audit["center_cells"].unique().tolist())
+    historic_pixels = sorted(rain_m["n_pixels"].unique().tolist())
+
+    reviewer_note = HANDOFF / "08_REVIEWER_NOTES.md"
+    if reviewer_note.exists():
+        alt_path = HANDOFF / "tables" / "T08_alternative_suspect_sensitivity.csv"
+        if not alt_path.exists():
+            raise RuntimeError("Missing T08: run scripts/10_suspect_sensitivity.py first.")
+        alt = pd.read_csv(alt_path).set_index("scenario")
+        base = alt.loc["VALID_ONLY"]
+        suspect = alt.loc["INCLUDE_SUSPECT_AS_REPORTED"]
+        appendices = {
+            "02_data_sources_and_methods.md": (
+                "\n\n## Lưu ý nghiệm thu không gian\n"
+                "Polygon CHẤP NHẬN CÓ ĐIỀU KIỆN. Trưởng nhóm đã CHẤP NHẬN CÓ ĐIỀU KIỆN "
+                "phương pháp tính mưa xấp xỉ mask pixel nhị phân và cos(vĩ độ) cho bài tiểu luận. "
+                "Phương pháp này không tính phần giao các ô biên. "
+                f"Kiểm tra 36 tháng với trọng số diện tích giao: trung bình |Δ%|={mean_abs_bias:.4f}%, "
+                f"lớn nhất |Δ%|={max_abs_bias:.4f}%. "
+                f"Chuỗi cũ dùng {historic_pixels} pixel, tái tính dùng {recalculated_pixels}; "
+                "chưa xác định dứt điểm nguyên nhân. Xem outputs/quality/rainfall_spatial_sensitivity.csv.\n"
+            ),
+            "04_results_and_interpretation.md": (
+                "\n\n## Kiểm tra độ nhạy SUSPECT\n"
+                f"Kịch bản chỉ dùng ngày VALID: Pearson lag 0 = {base['pearson_lag0']:.4f}, "
+                f"lag 1 = {base['pearson_lag1']:.4f}. "
+                f"Kịch bản giữ SUSPECT theo nguồn: lag 0 = {suspect['pearson_lag0']:.4f}, "
+                f"lag 1 = {suspect['pearson_lag1']:.4f}. "
+                "Thứ tự thay đổi; không kết luận lag 1 mạnh hơn ổn định. "
+                "Đây là độ nhạy, không phải kiểm chứng giá trị cực trị.\n"
+            ),
+            "05_limitations.md": (
+                "\n\n## Giới hạn nghiệm thu cập nhật\n"
+                "Polygon và phương pháp mưa CHIRPS đã được trưởng nhóm chấp nhận có điều kiện; "
+                f"chênh lệch tương đối tối đa khi kiểm tra fractional-area là {max_abs_bias:.4f}%. "
+                "Sai khác 377/379 pixel giữa hai lần trích xuất chưa truy nguyên đầy đủ. "
+                "Kết quả lag 0/lag 1 không bền vững trước cách xử lý SUSPECT.\n"
+            ),
+        }
+        for fname, note in appendices.items():
+            p = HANDOFF / fname
+            if p.exists():
+                p.write_text(p.read_text(encoding="utf-8") + note, encoding="utf-8")
 
     print("  Đã sinh 7 tài liệu bàn giao:")
     for doc in sorted(HANDOFF.glob("0*.md")):

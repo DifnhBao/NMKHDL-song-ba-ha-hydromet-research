@@ -130,9 +130,12 @@
 
 ### Nhận định
 
-- Có liên hệ dương, mức trung bình đến khá, giữa mưa tháng và lưu lượng về hồ;
-  mối liên hệ có ý nghĩa thống kê ở mức α = 0,05 cho cả lag 0 và lag 1.
-- Ở kịch bản chỉ dùng ngày VALID, lag 1 có hệ số cao hơn lag 0. Nhưng khi giữ cả các ngày inflow SUSPECT làm kiểm tra độ nhạy, Pearson lag 0 = 0,541 và lag 1 = 0,484; thứ tự đảo chiều. **Không thể kết luận lag 1 mạnh hơn một cách bền vững**, càng không suy ra thời gian trễ thủy văn thực.
+- Có liên hệ thống kê dương ở quy mô tháng giữa mưa và lưu lượng công bố.
+  Các p-value trong T05 là kiểm định tương quan thông thường, **chưa hiệu chỉnh
+  tự tương quan chuỗi thời gian, tính mùa hay nhiều phép thử**; không dùng riêng
+  chúng làm bằng chứng về nhân quả hoặc thời gian trễ thủy văn.
+- Lag 1 có hệ số cao hơn lag 0, nhưng **không đủ căn cứ** để kết luận đó là thời
+  gian trễ thủy văn thực; ba năm dữ liệu và tính mùa mạnh có thể tạo tương quan giả.
 - Loại tháng chứa ngày SUSPECT làm Pearson lag 0 giảm
   0,103 (từ 0,586 xuống
   0,483), trong khi lag 1 tăng 0,073.
@@ -154,5 +157,9 @@
 | F06 | Mực nước thượng lưu | Dao động trong dải vận hành, có đoạn bất thường đã loại |
 | F07 | Mưa và lưu lượng cùng trục thời gian | Hai chuỗi cùng pha ở quy mô tháng |
 | F08 | Scatter mưa – lưu lượng | Xu hướng dương, phân tán rộng |
-| F09 | So sánh tương quan lag 0 / lag 1 | Chỉ là kết quả theo bộ lọc QA; thứ tự thay đổi nếu giữ SUSPECT |
+| F09 | Độ nhạy Pearson theo ba kịch bản SUSPECT | Thứ tự lag 0/lag 1 đảo khi giữ SUSPECT; không suy ra độ trễ thực |
 | F10 | Phân bố lưu lượng | Lệch phải mạnh, đuôi dài về phía giá trị lớn |
+
+
+## Kiểm tra độ nhạy SUSPECT
+Kịch bản chỉ dùng ngày VALID: Pearson lag 0 = 0.5856, lag 1 = 0.6147. Kịch bản giữ SUSPECT theo nguồn: lag 0 = 0.5409, lag 1 = 0.4839. Thứ tự thay đổi; không kết luận lag 1 mạnh hơn ổn định. Đây là độ nhạy, không phải kiểm chứng giá trị cực trị.
