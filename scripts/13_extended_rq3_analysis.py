@@ -254,12 +254,15 @@ def make_figure(data: pd.DataFrame, pairs: pd.DataFrame, same: pd.DataFrame) -> 
     left.set_title("Toàn bộ 36 tháng", loc="left", fontweight="bold")
     left.text(287.5, 1225, "Vùng mưa\n260–315 mm", ha="center", va="top",
               fontsize=8, color="#555555")
+    pt_x = float(data.loc[data["year_month"] == "2025-11", "rainfall_total_mm"].iloc[0])
+    pt_y = float(data.loc[data["year_month"] == "2025-11", "inflow_mean_m3s"].iloc[0])
     left.annotate(
         "11/2025\n1.198 m³/s",
-        xy=(float(data.loc[data["year_month"] == "2025-11", "rainfall_total_mm"].iloc[0]),
-            float(data.loc[data["year_month"] == "2025-11", "inflow_mean_m3s"].iloc[0])),
-        xytext=(360, 1090), textcoords="data", fontsize=8, color="#444444",
-        arrowprops={"arrowstyle": "-", "color": "#777777", "lw": 0.8},
+        xy=(pt_x, pt_y),
+        xytext=(pt_x - 25, pt_y - 75), textcoords="data",
+        ha="right", va="top", fontsize=8, color="#333333",
+        bbox={"boxstyle": "round,pad=0.22", "fc": "white", "ec": "#D8D8D8", "alpha": 0.9},
+        arrowprops={"arrowstyle": "->", "color": "#666666", "lw": 0.8},
     )
     left.annotate("5/2023", xy=(270.89, 69.75), xytext=(-7, -12),
                   textcoords="offset points", ha="right", va="top", fontsize=8)
@@ -326,7 +329,8 @@ def make_figure(data: pd.DataFrame, pairs: pd.DataFrame, same: pd.DataFrame) -> 
         Line2D([], [], marker="o", color="none", markerfacecolor="none",
                markeredgecolor="#222222", markersize=9, label="Cặp tiêu biểu"),
     ]
-    left.legend(handles=handles, loc="upper right", fontsize=7.5, frameon=False)
+    left.legend(handles=handles, loc="upper left", fontsize=8, frameon=True,
+                facecolor="white", edgecolor="#D8D8D8", framealpha=0.9)
 
     fig.suptitle("F11 — Quan hệ mưa tháng và lưu lượng: cùng mưa, khác dòng chảy",
                  fontsize=12.5, fontweight="bold")

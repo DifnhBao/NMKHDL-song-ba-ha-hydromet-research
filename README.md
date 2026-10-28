@@ -7,12 +7,12 @@
 [![Chuỗi ngày](https://img.shields.io/badge/Chu%E1%BB%97i%20th%E1%BB%9Di%20gian-1.096%20ng%C3%A0y%20(36%20th%C3%A1ng)-brightgreen.svg)](#h%E1%BB%87-th%E1%BB%91ng-c%E1%BB%95ng-nghi%E1%BB%87m-thu-gate-16)
 [![Diện tích lưu vực](https://img.shields.io/badge/Di%E1%BB%87n%20t%C3%ADch-11.160%2C6%20km%C2%B2%20(%CE%94%200%2C41%25)-orange.svg)](#k%E1%BA%BFt-qu%E1%BA%A3-ch%C3%ADnh)
 [![Python](https://img.shields.io/badge/Python-%E2%89%A5%203.11%20%7C%203.13-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
-[![Nghiệm thu](https://img.shields.io/badge/Nghi%E1%BB%87m%20thu-Ch%E1%BB%9D%20ho%C3%A0n%20t%E1%BA%A5t-orange.svg)](#h%E1%BB%87-th%E1%BB%91ng-c%E1%BB%95ng-nghi%E1%BB%87m-thu-gate-16)
+[![Nghiệm thu](https://img.shields.io/badge/Nghi%E1%BB%87m%20thu-%C4%90%C3%A3%20merge%20PR%20%239-brightgreen.svg)](#h%E1%BB%87-th%E1%BB%91ng-c%E1%BB%95ng-nghi%E1%BB%87m-thu-gate-16)
 [![Tái lập](https://img.shields.io/badge/T%C3%A1i%20l%E1%BA%ADp-Ch%C6%B0a%20x%C3%A1c%20minh%20end--to--end-yellow.svg)](#h%C6%B0%E1%BB%9Bng-d%E1%BA%ABn-ch%E1%BA%A1y-quy-tr%C3%ACnh)
 
 </div>
 
-> **Trạng thái cập nhật 28/10/2026:** Trưởng nhóm đã chạy lại QA thủy văn từ 1.096 ngày, tích hợp GATE 4, phân tích GATE 5 và bàn giao GATE 6 thành công. GATE 3 sử dụng bộ khí tượng đã bàn giao (không tái tải đầy đủ từ raw trong vòng nghiệm thu này). Polygon lưu vực và phương pháp mưa CHIRPS xấp xỉ **ĐÃ ĐƯỢC CHẤP NHẬN CÓ ĐIỀU KIỆN** cho tiểu luận: so sánh 36 tháng với diện tích giao pixel cho sai lệch tương đối tuyệt đối trung bình **0,4477%**, tối đa **1,3952%**; chênh lệch 377/379 pixel chưa giải thích hết. Hai kịch bản lưu lượng `SUSPECT` có thể làm đảo thứ tự lag 0/lag 1. **ĐẠT RÀ SOÁT KỸ THUẬT CÓ ĐIỀU KIỆN, CHƯA NGHIỆM THU TOÀN ĐỀ TÀI, CHƯA MERGE PR #9.** Không có đủ dữ liệu thô trên GitHub để chứng minh tái lập end-to-end. Xem [quyết định nghiệm thu](docs/OWNER_DECISIONS_2026-10-27.md), [trạng thái QA](docs/QA_EXECUTION_STATUS_2026-10-27.md) và [PR #9](../../pull/9).
+> **Trạng thái cập nhật 28/10/2026:** Trưởng nhóm đã hoàn thành kiểm tra kỹ thuật và **ĐÃ MERGE PR #9 VÀO NHÁNH MAIN** (commit 897a1cd). Toàn bộ dữ liệu sạch, bảng thống kê và biểu đồ phân tích mới nhất đã được đồng bộ chính thức trên `main`. Quy trình pipeline (GATE 1–6) đạt kết quả kiểm định đầy đủ; thông số mực nước công trình đã được chuẩn hóa về mốc công bố chính thức (105,00 m và 101,00 m). Xem [quyết định nghiệm thu](docs/OWNER_DECISIONS_2026-10-27.md), [trạng thái QA](docs/QA_EXECUTION_STATUS_2026-10-27.md) và [PR #9](../../pull/9).
 
 ---
 
@@ -525,4 +525,4 @@ Theo đúng tinh thần của [DAC_TA_NGHIEN_CUU_V1.0.md](docs/DAC_TA_NGHIEN_CUU
 
 ## Trạng thái nghiệm thu hiện hành (cập nhật 28/10/2026)
 
-**Không dùng README này làm chứng nhận nghiệm thu toàn đề tài.** Quyết định trưởng nhóm tại [`docs/OWNER_DECISIONS_2026-10-27.md`](docs/OWNER_DECISIONS_2026-10-27.md): polygon và phương pháp mưa pixel-mask + cos(vĩ độ) chỉ **chấp nhận có điều kiện** cho nghiên cứu nhập môn. Đã thực hiện so sánh với fractional pixel overlap trên 36 tháng, nhưng vẫn còn chênh lệch 377/379 pixel và chưa có khả năng tái lập end-to-end mọi nguồn raw. Bảng T08 báo cáo cả hai kịch bản lưu lượng, không suy ra nhân quả hoặc độ trễ thực. Đã đối chiếu lại dữ liệu chính và bộ bàn giao trên nhánh `review/conditional-qa-20261027`; **PR #9 vẫn Draft**, chưa merge vào `main`. Người viết báo cáo có thể bắt đầu từ bộ bàn giao có điều kiện sau khi xác nhận nhánh/tài liệu làm việc, không tự coi dữ liệu hiện hành ở `main` là kết quả QA cuối cùng.
+**Trạng thái nhánh chính (main):** Trưởng nhóm đã hoàn tất đối chiếu dữ liệu chính và bộ bàn giao; **PR #9 đã được merge vào `main`** (commit 897a1cd). Bộ dữ liệu, bảng thống kê, biểu đồ và kết quả phân tích trên `main` hiện là nguồn dữ liệu chuẩn mực để hoàn thiện báo cáo đồ án. Các lưu ý phương pháp (sai lệch diện tích 0,41%, kịch bản dữ liệu nghi vấn và giới hạn quan hệ tương quan) đã được phản ánh đầy đủ, minh bạch trong báo cáo Word chính thức.

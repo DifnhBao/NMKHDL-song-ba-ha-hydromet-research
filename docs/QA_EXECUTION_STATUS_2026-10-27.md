@@ -2,7 +2,7 @@
 
 *Cập nhật tiến độ kỹ thuật: 28/10/2026. Giữ nguyên tên file làm đầu mối hồ sơ.*
 
-**Trạng thái:** CHƯA NGHIỆM THU CUỐI — nhánh `review/conditional-qa-20261027`, PR #9 Draft; `main` giữ nguyên.
+**Trạng thái:** ĐÃ MERGE PR #9 VÀO MAIN (commit 897a1cd) — dữ liệu và tài liệu bàn giao kỹ thuật đã đồng bộ chính thức trên `main`.
 
 ## Đã thay đổi trên nhánh review
 1. README và `basin_method.md`: bỏ thông tin "100% passed / end-to-end verified / polygon được duyệt hoàn toàn", thay bằng trạng thái chấp nhận có điều kiện.
@@ -20,7 +20,7 @@
 - [x] Đã chạy script 10, bảng T08 có hệ số VALID_ONLY 0,585573/0,614721 và INCLUDE_SUSPECT 0,540892/0,483878.
 - [x] Trưởng nhóm chạy GATE6: 27 thao tác sao chép, không thiếu; 10 hình F01–F10, T01–T08 (bao gồm T02b), bảy tài liệu chính và reviewer notes đều có mặt. Rà soát văn bản/CSV trên GitHub: không còn nhầm SUSPECT/INVALID_CONFIRMED trong T01, không thấy chuỗi xuống dòng `\\n` nguyên văn trong các tài liệu chính. Chưa đánh dấu là đã kiểm tra trực quan từng PNG.
 - [x] Đã sửa các mâu thuẫn phát hiện trong T01, Markdown, diễn giải SUSPECT, trạng thái CHIRPS và danh mục T08; Pearson được tính độc lập từ 36 tháng và khớp T05/T08. Vẫn công bố các giới hạn nguồn raw, 377/379 pixel và kiểm định tương quan thông thường.
-- [ ] Trưởng nhóm xác nhận nghiệm thu cuối; khi đó mới chuyển PR #9 khỏi Draft, merge vào `main`, chốt bộ `handoff_writer/` cho người viết.
+- [x] Trưởng nhóm xác nhận nghiệm thu kỹ thuật; đã chuyển PR #9 khỏi Draft, merge vào `main` (commit 897a1cd), chốt bộ `handoff_writer/` và đồng bộ toàn bộ pipeline.
 
 ## Không được ghi thành đã đạt
 - Chưa xác minh đúng toàn bộ dữ liệu CHIRPS/ERA5-Land từ raw.
