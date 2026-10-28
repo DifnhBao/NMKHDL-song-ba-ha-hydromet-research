@@ -20,11 +20,11 @@
 |---|---|---|
 | 2023-01-21 | Lưu lượng về hồ bằng 0 | SUSPECT |
 | 2023-01-21 | Mực nước thượng lưu bằng 0 | SUSPECT |
-| 2023-01-14 | Mực nước thượng lưu ngoài khoảng [85.0, 116.5] m | SUSPECT |
-| 2023-02-19 | Mực nước thượng lưu ngoài khoảng [85.0, 116.5] m | SUSPECT |
-| 2023-05-31 | Mực nước thượng lưu ngoài khoảng [85.0, 116.5] m | SUSPECT |
-| 2024-04-09 | Mực nước thượng lưu ngoài khoảng [85.0, 116.5] m | SUSPECT |
-| 2024-09-09 | Mực nước thượng lưu ngoài khoảng [85.0, 116.5] m | SUSPECT |
+| 2023-01-14 | Mực nước thượng lưu ngoài khoảng sàng lọc [91.0, 110.0] m | SUSPECT |
+| 2023-02-19 | Mực nước thượng lưu ngoài khoảng sàng lọc [91.0, 110.0] m | SUSPECT |
+| 2023-05-31 | Mực nước thượng lưu ngoài khoảng sàng lọc [91.0, 110.0] m | SUSPECT |
+| 2024-04-09 | Mực nước thượng lưu ngoài khoảng sàng lọc [91.0, 110.0] m | SUSPECT |
+| 2024-09-09 | Mực nước thượng lưu ngoài khoảng sàng lọc [91.0, 110.0] m | SUSPECT |
 | 2023-01-14 | Biến động mực nước đột ngột: 35.97 m/ngày | SUSPECT |
 | 2023-02-19 | Biến động mực nước đột ngột: 66.70 m/ngày | SUSPECT |
 | 2023-05-31 | Biến động mực nước đột ngột: 65.08 m/ngày | SUSPECT |
@@ -37,7 +37,7 @@
 | 2024-04-09 | Mực nước thượng lưu nhỏ hơn hạ lưu — nghi đảo cột, chưa có xác minh nguồn độc lậ | SUSPECT |
 | 2024-02-03 | Công suất 707.0 MW vượt thiết kế 220 MW | INVALID_CONFIRMED |
 | 2023-01-21 | Công suất bằng 0 | SUSPECT |
-| 2023-01-14 | Mực nước 140,30 m vượt xa mực nước dâng bình thường 111,5 m — có thể lỗi nhập li | SUSPECT |
+| 2023-01-14 | Mực nước 140,30 m vượt xa mực nước dâng bình thường 105.00 m — có thể lỗi nhập l | SUSPECT |
 | 2023-01-21 | Nhiều biến thủy văn bằng 0 nhưng sản lượng điện dương — có thể thiếu dữ liệu | SUSPECT |
 | 2023-05-31 | Mực nước hạ lưu bằng 0 — bất thường; mực nước thượng lưu cũng bất thường (38,4 m | SUSPECT |
 | 2024-09-09 | Mực nước thượng lưu 38.6 m — bất thường, ngoài phạm vi vận hành | SUSPECT |

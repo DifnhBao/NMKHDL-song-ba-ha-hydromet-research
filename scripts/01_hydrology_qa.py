@@ -42,9 +42,17 @@ QA_DIR.mkdir(parents=True, exist_ok=True)
 
 # ── Thông số kỹ thuật công trình Sông Ba Hạ ────────────────────────────
 MAX_POWER_MW = 220          # Công suất thiết kế (MW)
-NORMAL_POOL_M = 111.5       # Mực nước dâng bình thường (m)
-DEAD_POOL_M = 95.0          # Mực nước chết (m)
+NORMAL_POOL_M = 105.0       # Mực nước dâng bình thường (MNDBT) công bố (m)
+DEAD_POOL_M = 101.0         # Mực nước chết (MNC) công bố (m)
 MIN_DOWNSTREAM_M = 30.0     # Mực nước hạ lưu hợp lý tối thiểu (m)
+
+# ── Ngưỡng sàng lọc sơ bộ khám phá dữ liệu (QA screening) ──────────────
+# Lưu ý: Đây là khoảng lọc sơ bộ do nhóm quy định, không phải giới hạn vận hành cứng.
+# Giới hạn trên NORMAL_POOL_M + 5.0 (110.0 m) cho phép bao quát các mức nước lũ
+# thiết kế (105.96 m) và lũ kiểm tra (108.05 m) mà không gắn cờ nhầm.
+UPSTREAM_QA_MIN_M = DEAD_POOL_M - 10.0   # 91.0 m
+UPSTREAM_QA_MAX_M = NORMAL_POOL_M + 5.0  # 110.0 m
+
 INFLOW_SPIKE_FACTOR = 5.0   # Hệ số phát hiện lưu lượng đột biến so với lân cận
 CONSTANT_RUN_DAYS = 14      # Ngưỡng chuỗi giá trị không đổi
 COVERAGE_THRESHOLD = 0.90   # Ngưỡng tỷ lệ dữ liệu hợp lệ trong tháng
@@ -162,18 +170,18 @@ def qa_per_variable(df):
                            "value": 0, "flag": "SUSPECT",
                            "reason": "Mực nước thượng lưu bằng 0"})
 
-    # Mực nước ngoài khoảng hợp lý [DEAD_POOL_M - 5, NORMAL_POOL_M + 5]
+    # Mực nước ngoài khoảng sàng lọc [UPSTREAM_QA_MIN_M, UPSTREAM_QA_MAX_M]
     up_valid = (~mask_nan) & (~mask_zero)
     mask_extreme = up_valid & (
-        (df["upstream_level_m"] > NORMAL_POOL_M + 5) |
-        (df["upstream_level_m"] < DEAD_POOL_M - 10)
+        (df["upstream_level_m"] > UPSTREAM_QA_MAX_M) |
+        (df["upstream_level_m"] < UPSTREAM_QA_MIN_M)
     )
     for idx in df.index[mask_extreme]:
         df.loc[idx, "upstream_level_quality"] = "SUSPECT"
         exceptions.append({
             "date": df.loc[idx, "date"], "variable": "upstream_level_m",
             "value": df.loc[idx, "upstream_level_m"], "flag": "SUSPECT",
-            "reason": f"Mực nước thượng lưu ngoài khoảng [{DEAD_POOL_M-10}, {NORMAL_POOL_M+5}] m"
+            "reason": f"Mực nước thượng lưu ngoài khoảng sàng lọc [{UPSTREAM_QA_MIN_M:.1f}, {UPSTREAM_QA_MAX_M:.1f}] m"
         })
 
     # Biến động đột ngột mực nước (>5 m/ngày)
@@ -286,7 +294,7 @@ def qa_per_variable(df):
             exceptions.append({
                 "date": d, "variable": "upstream_level_m",
                 "value": 140.30, "flag": "SUSPECT",
-                "reason": "Mực nước 140,30 m vượt xa mực nước dâng bình thường 111,5 m — "
+                "reason": f"Mực nước 140,30 m vượt xa mực nước dâng bình thường {NORMAL_POOL_M:.2f} m — "
                           "có thể lỗi nhập liệu hoặc đảo chữ số"
             })
 
@@ -330,7 +338,7 @@ def qa_per_variable(df):
 
         # 2024-09-09: Mực nước bất thường
         if d_str == "2024-09-09":
-            if r["upstream_level_m"] < DEAD_POOL_M - 50:
+            if r["upstream_level_m"] < UPSTREAM_QA_MIN_M:
                 df.loc[row.index[0], "upstream_level_quality"] = "SUSPECT"
                 exceptions.append({
                     "date": d, "variable": "upstream_level_m",
