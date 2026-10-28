@@ -58,6 +58,12 @@ plt.rcParams.update({
 
 COVERAGE_THRESHOLD = 0.90
 
+# Chỉ là đường tham chiếu trên F06, KHÔNG thay ngưỡng/cờ của GATE 1.
+# Nguồn: Công ty CP Thủy điện Sông Ba Hạ, mục Giới thiệu / Thông số hồ chứa.
+# https://sbh.vn/vi-VN/lich-su-phat-trien/Lich-su-phat-trien-60-205
+NORMAL_POOL_DISPLAY_M = 105.0
+DEAD_POOL_DISPLAY_M = 101.0
+
 
 def load_data():
     """Đọc dữ liệu tích hợp."""
@@ -579,20 +585,21 @@ def create_F06(daily, hydro_qa):
     fig, ax = plt.subplots(figsize=(16, 6))
 
     if valid_pct >= 80:
-        # Vẽ mực nước
-        if hydro_qa is not None:
-            valid_mask = hydro_qa["upstream_level_quality"].isin(["VALID", "CORRECTED"])
-            dates = hydro_qa.loc[valid_mask, "date"]
-            levels = hydro_qa.loc[valid_mask, "upstream_level_m"]
-        else:
-            dates = daily["date"]
-            levels = daily["upstream_level_m"]
+        # Giữ toàn bộ trục ngày và dùng NaN tại các ngày không VALID:
+        # matplotlib sẽ NGẮT đường thay vì nối xuyên qua ngày SUSPECT.
+        series = (hydro_qa if hydro_qa is not None else daily).sort_values("date")
+        dates = pd.to_datetime(series["date"])
+        levels = pd.to_numeric(series["upstream_level_m"], errors="coerce")
+        if "upstream_level_quality" in series.columns:
+            valid_mask = series["upstream_level_quality"].isin(["VALID", "CORRECTED"])
+            levels = levels.where(valid_mask)
 
-        ax.plot(dates, levels, linewidth=0.6, color="#7B1FA2")
-        ax.axhline(y=111.5, color="red", linestyle="--", alpha=0.5,
-                   label="Mực nước dâng bình thường (111.5 m)")
-        ax.axhline(y=95.0, color="orange", linestyle="--", alpha=0.5,
-                   label="Mực nước chết (95.0 m)")
+        ax.plot(dates, levels, linewidth=0.6, color="#7B1FA2",
+                label="Mực nước thượng lưu (ngày VALID)")
+        ax.axhline(y=NORMAL_POOL_DISPLAY_M, color="red", linestyle="--",
+                   alpha=0.6, label="Mực nước dâng bình thường (105,00 m)")
+        ax.axhline(y=DEAD_POOL_DISPLAY_M, color="orange", linestyle="--",
+                   alpha=0.6, label="Mực nước chết (101,00 m)")
         ax.set_ylabel("Mực nước (m)")
         ax.set_title(
             f"F06 — Biến động mực nước thượng lưu sau kiểm định 2023–2025\n"
