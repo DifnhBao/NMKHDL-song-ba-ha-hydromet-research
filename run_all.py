@@ -314,6 +314,10 @@ def main():
             if sens_code != 0:
                 errors.append("10_suspect_sensitivity.py")
                 break
+            chart_code = run_script("12_plot_report_F09.py", "QA — F09 tái lập từ T05/T07/T08")
+            if chart_code != 0:
+                errors.append("12_plot_report_F09.py")
+                break
         code = run_script(step["script"], step["desc"])
         if code != 0:
             errors.append(step["script"])
@@ -347,7 +351,7 @@ def main():
     print("  ✅ Toàn bộ pipeline hoàn thành thành công!")
     print("\n  GATE 6 — Bàn giao hoàn tất:")
     print("  1. handoff_writer/figures/ — hình F01–F10")
-    print("  2. handoff_writer/tables/  — bảng T01–T07")
+    print("  2. handoff_writer/tables/  — bảng T01–T08 (kèm T02b)")
     print("  3. handoff_writer/selected_data/ — dữ liệu chính")
     print("  4. handoff_writer/*.md — tài liệu cho người viết báo cáo")
     return 0
