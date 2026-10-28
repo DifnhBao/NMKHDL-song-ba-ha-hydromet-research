@@ -1,0 +1,8 @@
+﻿metric,n,r,p_value,note
+"Pearson lag 0, toàn bộ 36 tháng",36,0.585573,0.000176,Mưa tháng hiện tại và lưu lượng cùng tháng
+"Pearson lag 0, mẫu 35 tháng",35,0.583270,0.000236,Mẫu dùng được cho trễ 1
+"Pearson lag 1, mưa tháng trước",35,0.614721,0.000085,Mưa tháng t-1 và lưu lượng tháng t
+"Pearson P2m, 35 tháng",35,0.701188,0.000003,P2m = P_t + P_(t-1)
+"Pearson hai tháng trước, 34 tháng",34,0.669860,0.000015,"P_(t-1) + P_(t-2), không gồm P_t"
+Tương quan riêng mưa trước | mưa hiện tại,35,0.480739,0.004003,"Kiểm soát mưa cùng tháng, chưa kiểm soát mùa"
+"Tương quan riêng mưa trước, đã khử mùa sin/cos",35,0.289916,0.091148,"Khử mùa bằng sin/cos; p chưa hiệu chỉnh bậc tự do, chỉ tham khảo"
