@@ -28,6 +28,6 @@ Kịch bản giữ cả ngày SUSPECT: lag0 = 0,5409, lag1 = 0,4839. Bảng và 
 - `gate2_approval.json` đã sửa rõ phạm vi CHẤP NHẬN CÓ ĐIỀU KIỆN; không lấy trạng thái `approved:true` trong tệp đó làm chứng nhận nghiệm thu cuối.
 - Các ngày mực nước nghi đảo cột đã được chạy lại từ raw và gắn `SUSPECT` (không phải `INVALID_CONFIRMED`); chưa xác minh nguyên nhân với nguồn độc lập.
 - Dữ liệu mưa tháng đã được trưởng nhóm tải lại để chạy phép so sánh, nhưng nguyên bộ raw HTML/ERA5-Land chưa được tái lập end-to-end.
-- `scripts/08_write_handoff.py` cần chạy thử trên bộ kết quả cập nhật; sau thay đổi QA mực nước cần tái xuất các bảng và hình liên quan.
+- Đã chạy lại GATE1, GATE4, GATE5a/b và GATE6 từ máy trưởng nhóm, cập nhật T01–T08, F01–F10 và `handoff_writer/` trên nhánh review; commit sản phẩm cuối của vòng chỉnh metadata là `5d10df9`. GATE3 dùng bộ khí tượng đã bàn giao, không tái lập toàn bộ từ raw trong vòng này.
 
-**Không merge nhánh nghiệm thu vào main và chưa chuyển giao bản kết quả cuối cho người viết khi chưa có quyết định tiếp theo.**
+**Cập nhật tiến độ 28/10/2026:** Bộ dữ liệu/kết quả có thể dùng làm **nguồn tham khảo kỹ thuật có điều kiện** cho người viết sau khi xác nhận nơi làm việc và tránh ghi đè; không gọi là nghiệm thu toàn đề tài. **Chưa merge nhánh review vào `main`** cho đến khi trưởng nhóm xác nhận người viết đã lưu an toàn các thay đổi và phê duyệt tích hợp.
