@@ -27,3 +27,4 @@ data/processed/**
 # Keep curated figures/tables reviewable; no sensitive material
 .DS_Store
 Thumbs.db
+~$*
