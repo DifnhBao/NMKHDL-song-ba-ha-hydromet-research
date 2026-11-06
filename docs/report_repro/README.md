@@ -1,4 +1,4 @@
-# Nguồn hình của `docs/BAO_CAO_final.docx`
+# Nguồn hình của `docs/BAO_CAO.docx`
 
 Thư mục này giữ **đúng PNG nhúng trong bản Word** và mã tạo các bố cục riêng của báo cáo. Đường dẫn bên dưới tính từ gốc repository. Nguồn bảng/CSV dùng để đối chiếu là phiên bản kỹ thuật tại commit `a9d3544b242d5554755c78939884f1113188e755`; báo cáo được thêm sau đó. Các hình này không xác thực lại dữ liệu nguồn thô.
 

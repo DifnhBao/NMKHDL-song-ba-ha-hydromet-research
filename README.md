@@ -1,5 +1,7 @@
 # Nghiên cứu Dữ liệu Khí tượng Thủy văn — Lưu vực sông Ba đến Thủy điện Sông Ba Hạ (2023–2025)
 
+**Báo cáo nộp:** [docs/BAO_CAO.docx](docs/BAO_CAO.docx) · **Học phần:** Nhập môn khoa học dữ liệu · **Giảng viên:** Nguyễn Ngọc Duy. Nhóm gồm Lê Đình Bảo (N23DCCN141), Đặng Văn Hiệp (N23DCCN155) và Nguyễn Ngọc Quốc Huy (N23DCCN162).
+
 <div align="center">
 
 [![Học phần](https://img.shields.io/badge/H%E1%BB%8Dc%20ph%E1%BA%A7n-Nh%E1%BA%ADp%20m%C3%B4n%20KHDL%20(PTIT)-red.svg)](https://portal.ptit.edu.vn/)
@@ -12,7 +14,7 @@
 
 </div>
 
-> **Trạng thái cập nhật 28/10/2026:** Trưởng nhóm đã hoàn thành kiểm tra kỹ thuật và **ĐÃ MERGE PR #9 VÀO NHÁNH MAIN** (commit 897a1cd). Toàn bộ dữ liệu sạch, bảng thống kê và biểu đồ phân tích mới nhất đã được đồng bộ chính thức trên `main`. Quy trình pipeline (GATE 1–6) đạt kết quả kiểm định đầy đủ; thông số mực nước công trình đã được chuẩn hóa về mốc công bố chính thức (105,00 m và 101,00 m). Xem [quyết định nghiệm thu](docs/OWNER_DECISIONS_2026-10-27.md), [trạng thái QA](docs/QA_EXECUTION_STATUS_2026-10-27.md) và [PR #9](../../pull/9).
+> **Trạng thái kỹ thuật:** PR #9 đã được merge vào `main`. Bảng và hình bàn giao là cơ sở của báo cáo Word. Polygon lưu vực và cách tính mưa theo tâm pixel được trưởng nhóm **chấp nhận có điều kiện** cho tiểu luận; bản Git chưa chứa đủ dữ liệu thô để chứng nhận chạy lại toàn bộ từ đầu. Xem [quyết định kỹ thuật](docs/OWNER_DECISIONS_2026-10-27.md), [ghi chú rà soát](docs/FINAL_REVIEW_AND_HANDOFF.md) và [nguồn hình của báo cáo](docs/report_repro/README.md).
 
 ---
 
@@ -112,8 +114,10 @@ flowchart TD
 ## 3. Cấu trúc Thư mục Dự án
 
 ```text
-doankhdl/
+NMKHDL-song-ba-ha-hydromet-research/
 ├── docs/                                  # Đặc tả kỹ thuật và quy trình gốc
+│   ├── BAO_CAO.docx                       # Bản báo cáo duy nhất để nộp
+│   ├── report_repro/                      # PNG và mã vẽ đúng các hình trong báo cáo
 │   ├── DAC_TA_NGHIEN_CUU_V1.0.md          # Đặc tả yêu cầu nghiên cứu V1.0
 │   ├── PHU_LUC_TRIEN_KHAI_V1.1.md          # Phụ lục hướng dẫn triển khai kỹ thuật V1.1
 │   └── WORKFLOW.md                        # Quy trình phối hợp và tiêu chí nghiệm thu PR
@@ -134,7 +138,7 @@ doankhdl/
 │       ├── temperature_monthly.csv        # Chuỗi nhiệt độ tháng 36 tháng
 │       ├── hydromet_daily.csv             # Bảng tích hợp ngày (1.096 dòng)
 │       ├── hydromet_monthly.csv           # Bảng tích hợp tháng (36 dòng)
-│       └── song_ba_ha_catchment.geojson   # Đa giác ranh giới lưu vực chính thức
+│       └── song_ba_ha_catchment.geojson   # Polygon lưu vực xấp xỉ, chấp nhận có điều kiện
 │
 ├── scripts/                               # Mã nguồn thực thi 6 Cổng Nghiệm thu
 │   ├── 01_hydrology_qa.py                 # GATE 1: Kiểm định 1.096 ngày dữ liệu thủy văn
@@ -144,12 +148,17 @@ doankhdl/
 │   ├── 05_data_integration.py             # GATE 4: Tích hợp dữ liệu ngày và tháng, chạy 11 kiểm tra QA
 │   ├── 06_exploratory_analysis.py         # GATE 5a: Thống kê mô tả & trực quan EDA (RQ1 & RQ2)
 │   ├── 07_rainfall_runoff_analysis.py     # GATE 5b: Phân tích tương quan mưa – dòng chảy (RQ3)
-│   └── 08_write_handoff.py                # GATE 6: Tự động biên soạn 7 tài liệu handoff chuẩn hóa
+│   ├── 08_write_handoff.py                # GATE 6: Tự động biên soạn tài liệu bàn giao
+│   ├── 09_rainfall_spatial_sensitivity.py # Kiểm tra độ nhạy phép tính mưa lưu vực
+│   ├── 10_suspect_sensitivity.py          # Kịch bản giữ ngày lưu lượng SUSPECT
+│   ├── 11_restore_qa_auxiliary.py         # Kết quả QA bổ trợ
+│   ├── 12_plot_report_F09.py              # Biểu đồ độ nhạy tương quan
+│   └── 13_extended_rq3_analysis.py       # Phân tích cặp tháng và lịch sử mưa
 │
 ├── outputs/                               # Sản phẩm kết xuất kỹ thuật
-│   ├── figures/                           # Đồ thị F02–F10 (PNG ≥ 200 dpi)
+│   ├── figures/                           # Đồ thị F02–F10 và F11 (PNG)
 │   ├── maps/                              # Bản đồ F01 (PNG ≥ 200 dpi)
-│   ├── tables/                            # Bảng số liệu T01–T07 (CSV)
+│   ├── tables/                            # Bảng kết quả chính và T09_* (CSV)
 │   └── quality/                           # Báo cáo QA, phương pháp luận và gate2_approval.json
 │
 ├── handoff_writer/                        # Bộ bàn giao trọn gói độc lập cho người viết báo cáo
@@ -160,8 +169,8 @@ doankhdl/
 │   ├── 05_limitations.md                  # Giới hạn nghiên cứu và ranh giới diễn giải
 │   ├── 06_figures_and_tables_index.md     # Mục lục tra cứu toàn bộ hình ảnh và bảng biểu
 │   ├── 07_references.md                   # Danh mục tài liệu tham khảo chuẩn học thuật
-│   ├── figures/                           # 10 biểu đồ và bản đồ (F01–F10)
-│   ├── tables/                            # 8 bảng kết quả thống kê (T01–T07, T02b)
+│   ├── figures/                           # Bản đồ và hình F01–F11
+│   ├── tables/                            # T01–T09, gồm bảng độ nhạy và phân tích mở rộng
 │   └── selected_data/                     # 10 tệp dữ liệu đã làm sạch và tích hợp
 │
 ├── run_all.py                             # Bộ điều phối thực thi pipeline toàn diện
@@ -178,8 +187,8 @@ Dự án yêu cầu phiên bản **Python $\ge 3.11$** (khuyến nghị `Python 
 ### Bước 1: Khởi tạo và kích hoạt môi trường ảo
 
 ```bash
-# Di chuyển vào thư mục dự án
-cd "d:/PTIT/Khoa học dữ liệu/doankhdl"
+# Sau khi clone repository
+cd NMKHDL-song-ba-ha-hydromet-research
 
 # Khởi tạo môi trường ảo Python
 python -m venv .venv
@@ -353,7 +362,7 @@ Dự án thiết lập 6 chốt kiểm soát chất lượng tương ứng với
 | **GATE 1** | `01_hydrology_qa.py` | `hydrology_clean.csv`<br>`hydrology_exceptions.csv`<br>`hydrology_qa_summary.csv`<br>`hydrology_quality_notes.md` | • Đủ 1.096 ngày liên tục từ 01/01/2023 đến 31/12/2025.<br>• 0 ngày trùng lặp, 0 ngày khuyết thiếu.<br>• Giữ nguyên dữ liệu thô, gắn cờ chất lượng độc lập theo từng biến.<br>• Rà soát và giải trình đủ 8 mốc ngoại lệ bắt buộc. |
 | **GATE 2** | `02_basin_delineation.py` | `song_ba_ha_catchment.geojson`<br>`basin_validation.csv`<br>`basin_method.md`<br>`F01_basin_map.png` | • Tuyến đập và nhà máy nằm trọn trong polygon.<br>• Hợp nhất đúng 82 tiểu lưu vực qua liên thông `NEXT_DOWN`.<br>• Sai lệch diện tích Albers Equal Area $\le 5\%$ so với mốc $11.115\text{ km}^2$.<br>• **Bắt buộc có phê duyệt chính thức** trong `gate2_approval.json`. |
 | **GATE 3a** | `03_chirps_extraction.py` | `rainfall_monthly.csv` (36 dòng)<br>`rainfall_daily.csv` (1.096 dòng)<br>`rainfall_qa.csv`<br>`rainfall_extraction_method.md` | • Dùng chuẩn CHIRPS v3.0 Final.<br>• Tính lượng mưa trung bình lưu vực theo trọng số $\cos(\text{vĩ độ})$.<br>• Đủ 1.096 ngày `rnl`, 0 giá trị NaN.<br>• Đối chiếu chéo tổng ngày với sản phẩm tháng: sai lệch $< 10\%$. |
-| **GATE 3b** | `04_temperature_extraction.py` | `temperature_monthly.csv` (36 dòng)<br>`temperature_daily.csv` (1.096 dòng)<br>`temperature_method.md` | • Biến nhiệt độ không khí 2m (`2m_temperature`) ERA5-Land.<br>• Nội suy trên 95 điểm lưới $0,1^\circ$ bên trong lưu vực.<br>• Quy đổi chính xác Kelvin sang Celsius ($T - 273,15$).<br>• 0 giá trị khuyết thiếu; ghi rõ quy ước thời gian UTC. |
+| **GATE 3b** | `04_temperature_extraction.py` | `temperature_monthly.csv` (36 dòng)<br>`temperature_daily.csv` (1.096 dòng)<br>`temperature_method.md` | • Yêu cầu `daily=temperature_2m_mean`, `models=era5_land`, `timezone=UTC` qua Open-Meteo tại 95 vị trí trong polygon.<br>• API có thể chọn ô phù hợp và hiệu chỉnh độ cao theo mặc định; chưa chứng minh đây là 95 ô ERA5-Land gốc riêng biệt.<br>• Ghi rõ nguồn API và quy ước ngày UTC. |
 | **GATE 4** | `05_data_integration.py` | `hydromet_daily.csv` (1.096 dòng)<br>`hydromet_monthly.csv` (36 dòng)<br>`integration_qa.csv`<br>`data_dictionary.md` | • Đạt tuyệt đối **11/11 tiêu chí kiểm tra QA**.<br>• Không trùng khóa thời gian `date` hoặc `year_month`.<br>• Không dùng số 0 thay thế giá trị thiếu; đủ cờ chất lượng.<br>• Bảng tháng có tỷ lệ bao phủ dữ liệu hợp lệ $\ge 90\%$. |
 | **GATE 5** | `06_exploratory_analysis.py`<br>`07_rainfall_runoff_analysis.py` | Bảng: `T01`–`T07`, `T02b`<br>Hình: `F02`–`F10` | • Giải quyết trọn vẹn 3 câu hỏi nghiên cứu RQ1, RQ2, RQ3.<br>• Đầy đủ tương quan Lag 0, Lag 1, Deseasonalised, phân mùa và terciles.<br>• Có phân tích độ nhạy (T07) khi loại bỏ tháng ngoại lệ.<br>• Biểu đồ đạt chuẩn xuất bản: có nguồn, đơn vị, độ phân giải $\ge 200\text{ dpi}$. |
 | **GATE 6** | `08_write_handoff.py`<br>`run_all.py` | Thư mục `handoff_writer/`<br>(7 docs chính, 10 figures, T01–T08 kèm T02b, dữ liệu chọn lọc) | • Kiểm tra 27 thao tác sao chép của GATE 6, không thiếu tệp; T08 do script 10 tạo riêng.<br>• 7 tài liệu Markdown được sinh tự động trực tiếp từ số liệu bảng sạch.<br>• Khớp số liệu 100% giữa văn bản, bảng biểu và biểu đồ.<br>• Đầy đủ tài liệu trích dẫn tham khảo chuẩn học thuật. |
@@ -370,7 +379,7 @@ Nhằm đảm bảo tính minh bạch khoa học, các kênh thu thập và phư
 ├─────────────────┼──────────────────────────┼─────────────────────────────┼────────────────────────────────────────────────────────┤
 │ Thủy văn hồ     │ Vận hành Sông Ba Hạ      │ Gói số liệu nội bộ (CSV)    │ Quan trắc tại tuyến công trình (13,0236°N, 108,9039°E) │
 │ Lượng mưa       │ CHIRPS v3.0 Final        │ FTP Server (CHC UCSB)       │ Cắt theo polygon, trung bình trọng số cos(lat)         │
-│ Nhiệt độ        │ ERA5-Land Reanalysis     │ Open-Meteo Archive / CDS    │ Trung bình 95 điểm lưới 0,1° nằm trong polygon         │
+│ Nhiệt độ        │ ERA5-Land Reanalysis     │ Open-Meteo Archive API      │ Tổng hợp từ 95 vị trí yêu cầu trong polygon             │
 │ Ranh giới mạng  │ HydroBASINS v1c Lev 12   │ hydrosheds.org              │ Truy vết topology NEXT_DOWN từ cửa xả đập              │
 │ Vị trí công trình│ OpenStreetMap (OSM)      │ Overpass API (way/480785944)│ Tọa độ tâm công trình WGS84 (EPSG:4326)                │
 └─────────────────┴──────────────────────────┴─────────────────────────────┴────────────────────────────────────────────────────────┘
@@ -379,7 +388,7 @@ Nhằm đảm bảo tính minh bạch khoa học, các kênh thu thập và phư
 > [!NOTE]
 > **Giải trình kênh phân phối:**
 > * Máy chủ HTTP của CHC UCSB kích hoạt bộ lọc bảo mật CrowdSec từ chối truy cập HTTP từ một số dải IP; mã nguồn tự động chuyển sang máy chủ FTP chính thức (`ftp.chc.ucsb.edu`), đảm bảo tải chính xác sản phẩm gốc mà không làm sai lệch số liệu.
-> * Nhiệt độ ERA5-Land được phân phối thông qua giao diện lưu trữ mở ECMWF ERA5-Land (Open-Meteo Archive), hoàn toàn tương thích về mặt vật lý với biến `2m_temperature` từ Copernicus CDS.
+> * Nhiệt độ được yêu cầu qua Open-Meteo với `models=era5_land`. API có mặc định chọn ô và hiệu chỉnh độ cao; kết quả này chưa được đối chiếu từng vị trí với phép trích xuất trực tiếp lưới CDS.
 
 ---
 
@@ -391,8 +400,8 @@ Nhằm đảm bảo tính minh bạch khoa học, các kênh thu thập và phư
 * **Tổng số tiểu lưu vực thượng nguồn:** 82 đơn vị.
 * **Diện tích tính toán (Phép chiếu Albers Equal Area):** **$11.160,6\text{ km}^2$**.
 * **Diện tích tham chiếu thiết kế công trình:** $11.115\text{ km}^2$.
-* **Độ lệch tương đối:** **$0,41\%$** (thỏa mãn quy định $\le 5\%$).
-* **Kiểm tra hình học:** Tuyến đập (`13.0236°N, 108.9039°E`) và Nhà máy thủy điện (`13.0653°N, 108.9129°E`) đều nằm xác thực bên trong polygon.
+* **Độ lệch tương đối:** **$0,41\%$** so với diện tích tham khảo; sự gần khớp này chưa xác nhận chính xác cửa ra tại tuyến đập.
+* **Kiểm tra hình học:** Điểm tham khảo của tuyến đập (`13.0236°N, 108.9039°E`) và nhà máy (`13.0653°N, 108.9129°E`) nằm trong polygon xấp xỉ.
 
 ---
 
@@ -401,12 +410,12 @@ Nhằm đảm bảo tính minh bạch khoa học, các kênh thu thập và phư
 * **Tổng lượng mưa tích lũy 3 năm:** **$5.685,1\text{ mm}$**.
   * Năm 2023: $1.933,6\text{ mm}$
   * Năm 2024: $1.625,9\text{ mm}$
-  * Năm 2025: $2.125,6\text{ mm}$ (năm mưa lớn nổi trội)
+  * Năm 2025: $2.125,6\text{ mm}$ (cao nhất trong ba năm khảo sát)
 * **Lượng mưa tháng:** Trung bình $157,9\text{ mm/tháng}$ (dao động từ $4,0\text{ mm}$ tháng 01/2024 đến cực đại $448,0\text{ mm}$ tháng 11/2025).
 * **Tính mùa vụ sâu sắc:**
   * **Mùa mưa (Tháng 5 – Tháng 11):** Gồm 21 tháng, lượng mưa trung bình đạt $247,3\text{ mm/tháng}$, chiếm tới **$91,3\%$** tổng lượng mưa toàn thời kỳ.
   * **Mùa khô (Tháng 12 – Tháng 4 năm sau):** Gồm 15 tháng, lượng mưa trung bình chỉ $32,8\text{ mm/tháng}$, chỉ chiếm **$8,7\%$** tổng lượng nước rơi.
-* **Nhiệt độ không khí 2m:** Trung bình toàn lưu vực là **$24,02^\circ\text{C}$** (thấp nhất $18,83^\circ\text{C}$ vào tháng 01/2023, cao nhất $28,77^\circ\text{C}$ vào tháng 05/2024).
+* **Nhiệt độ không khí 2m đại diện lưu vực:** Trung bình chuỗi tổng hợp qua Open-Meteo là **$24,02^\circ\text{C}$** (thấp nhất $18,83^\circ\text{C}$ vào tháng 01/2023, cao nhất $28,77^\circ\text{C}$ vào tháng 05/2024).
 
 ---
 
@@ -417,43 +426,36 @@ Nhằm đảm bảo tính minh bạch khoa học, các kênh thu thập và phư
   * Trung bình: $194,98\text{ m}^3/\text{s}$
   * Trung vị: $93,53\text{ m}^3/\text{s}$
   * Độ lệch chuẩn ($SD$): $308,70\text{ m}^3/\text{s}$ (hệ số biến động $CV = 1,583$)
-  * Phân vị 95 ($P_{95}$): $658,71\text{ m}^3/\text{s}$
+  * Phân vị 95 ($P_{95}$): $658,70\text{ m}^3/\text{s}$
   * Đỉnh lũ ghi nhận hợp lệ lớn nhất: $4.543,28\text{ m}^3/\text{s}$
   * Độ lệch (Skewness): $6,35$; Độ nhọn (Kurtosis): $66,16$ $\rightarrow$ Phân bố dòng chảy lệch phải cực kỳ mạnh.
-* **Mực nước thượng lưu hồ:** 1.084 ngày dữ liệu hợp lệ; dao động trong biên độ điều tiết bình thường từ $101,02\text{ m}$ đến $105,96\text{ m}$ (mực nước dâng bình thường thiết kế là $111,5\text{ m}$, mực nước chết là $95,0\text{ m}$).
+* **Mực nước thượng lưu hồ:** 1.084 ngày VALID, từ $101,02\text{ m}$ đến $105,96\text{ m}$. Mốc công bố của công trình là MNDBT **105,00 m** và MNC **101,00 m**; giá trị cao nhất của chuỗi cần được đọc cùng bối cảnh vận hành, không tự xác nhận là điều kiện bình thường.
 
 ---
 
 ### RQ3 — Mối liên hệ Thống kê Mưa – Dòng chảy
 
-Phân tích tương quan trên quy mô 36 tháng ($n = 36$):
+Phân tích chính ghép mưa và lưu lượng theo tháng. Trễ 0 ghép cùng tháng; trễ 1 ghép mưa tháng trước với lưu lượng tháng hiện tại:
 
-| Kịch bản phân tích | Cỡ mẫu ($n$) | Hệ số Pearson ($r$) | Ý nghĩa ($p$-value) | Hệ số Spearman ($\rho$) | Ý nghĩa ($p$-value) | Nhận xét thống kê |
-| :--- | :---: | :---: | :---: | :---: | :---: | :--- |
-| **Độ trễ 0 tháng (Lag 0)** | 36 | **$0,5856$** | $p = 0,00018$ | **$0,5439$** | $p = 0,00061$ | Tương quan dương mức khá, có ý nghĩa thống kê cao. |
-| **Độ trễ 1 tháng (Lag 1)** | 35 | **$0,6147$** | $p = 0,00008$ | **$0,7930$** | $p < 0,00001$ | Tương quan hạng Spearman tăng vọt lên mức mạnh. |
-| **Khử mùa (Deseasonalised)** | 36 | **$0,6573$** | $p = 0,00001$ | **$0,4389$** | $p = 0,00741$ | Mối liên hệ vẫn vững chắc sau khi loại bỏ chu kỳ mùa. |
-| **Mùa mưa (T5–T11)** | 21 | $0,5412$ | $p = 0,01129$ | $0,3390$ | $p = 0,13281$ | Tương quan tuyến tính duy trì ở mức khá. |
-| **Mùa khô (T12–T4)** | 15 | $0,4470$ | $p = 0,09480$ | $0,2321$ | $p = 0,40510$ | Dòng chảy mùa khô phụ thuộc chủ yếu vào xả đáy hồ thượng lưu. |
+| Cách xử lý ngày lưu lượng nghi vấn | n trễ 0 | Pearson r trễ 0 | n trễ 1 | Pearson r trễ 1 |
+| :--- | ---: | ---: | ---: | ---: |
+| Chỉ ngày VALID | 36 | **0,5856** | 35 | **0,6147** |
+| Loại tháng có ngày SUSPECT | 34 | 0,4830 | 32 | 0,6877 |
+| Giữ SUSPECT theo số công bố | 36 | 0,5409 | 35 | 0,4839 |
 
-> [!TIP]
-> **Ý nghĩa thủy văn:** Hệ số tương quan Spearman ở độ trễ 1 tháng đạt tới $\rho = 0,7930$, phản ánh hiệu ứng tích lũy dòng chảy ngầm và thời gian truyền lũ chậm trên một lưu vực có quy mô lớn hơn $11.000\text{ km}^2$.
+Các kịch bản đều cho liên hệ dương, nhưng thứ tự trễ 0 và trễ 1 thay đổi theo cách xử lý dữ liệu. Spearman trong kịch bản chính là 0,5439 (trễ 0) và 0,7930 (trễ 1); các hệ số không xác định thời gian truyền nước hoặc quan hệ nhân quả. Giá trị p thông thường chưa hiệu chỉnh đầy đủ tính mùa và phụ thuộc thời gian, nên chỉ dùng tham khảo. Xem Bảng 6, Bảng 11 và mục 4.3 của [báo cáo](docs/BAO_CAO.docx).
 
 ---
 
 ### Kiểm tra Độ nhạy với Ngoại lệ
 
-Hai ngày 19–20/11/2025 ghi nhận lưu lượng $12.455\text{ m}^3/\text{s}$ (gấp ~18,9 lần phân vị $P_{95}$) được gắn cờ `SUSPECT` để tiến hành phân tích độ nhạy tại bảng [T07_sensitivity.csv](outputs/tables/T07_sensitivity.csv):
-
-* **Kịch bản cơ sở (Toàn bộ 36 tháng):** Lag 0 có $r = 0,5856$; Lag 1 có $r = 0,6147$.
-* **Kịch bản loại bỏ tháng nghi vấn ($n = 34$):** Lag 0 có $r = 0,4830$ ($\Delta r = -0,1026$); Lag 1 có $r = 0,6877$ ($\Delta r = +0,0730$).
-* **Kết luận độ nhạy:** Ngay cả khi loại bỏ hoàn toàn các tháng có sự kiện lũ nghi vấn, mối tương quan mưa - dòng chảy vẫn duy trì ở mức dương có ý nghĩa thống kê cao ($p < 0,01$), chứng minh tính quy luật không bị chi phối đơn lẻ bởi một sự kiện ngoại lệ.
+Bốn ngày lưu lượng được gắn cờ `SUSPECT`, gồm ba ngày trong tháng 11/2025. Hai ngày 19–20/11 công bố 12.455 m³/s chưa được xác nhận độc lập. Khi đưa các giá trị SUSPECT trở lại theo đúng số nguồn, hệ số trễ 0 là **0,5409** còn trễ 1 là **0,4839**, đảo thứ tự so với kịch bản chính. Vì vậy, báo cáo trình bày cả kịch bản trong Bảng 6 và giữ cờ chất lượng khi diễn giải.
 
 ---
 
 ## 10. Danh mục Ấn phẩm Bàn giao (Handoff Kit)
 
-Toàn bộ 27 tệp ấn phẩm bàn giao được đóng gói đồng bộ tại thư mục độc lập [handoff_writer/](handoff_writer/):
+Bộ dữ liệu, bảng và hình dùng cho báo cáo được tập hợp tại [handoff_writer/](handoff_writer/):
 
 ### Danh mục Bản đồ & Biểu đồ (`handoff_writer/figures/`)
 * **F01:** Bản đồ vị trí địa lý, mạng sông và ranh giới lưu vực Thủy điện Sông Ba Hạ (`F01_basin_map.png`).
@@ -464,8 +466,9 @@ Toàn bộ 27 tệp ấn phẩm bàn giao được đóng gói đồng bộ tạ
 * **F06:** Diễn biến mực nước thượng lưu hồ sau kiểm định QA (`F06_upstream_level.png`).
 * **F07:** Biểu đồ đồng thời hai trục tung so sánh Lượng mưa vs Lưu lượng về hồ (`F07_rainfall_inflow_comparison.png`).
 * **F08:** Đồ thị phân tán (Scatter plot) tương quan Lượng mưa – Lưu lượng về hồ (`F08_scatter_rainfall_inflow.png`).
-* **F09:** Biểu đồ so sánh hệ số tương quan theo các độ trễ thời gian (`F09_correlation_comparison.png`).
-* **F10:** Phân bố tần suất lưu lượng (PDF, CDF) và biểu đồ phân vị Boxplot theo năm (`F10_inflow_distribution.png`).
+* **F09:** So sánh hệ số tương quan trễ 0 và trễ 1 theo ba cách xử lý SUSPECT (`F09_correlation_comparison.png`).
+* **F10:** Phân bố và phân vị lưu lượng ngày VALID (`F10_inflow_distribution.png`).
+* **F11:** Các cặp tháng có mưa gần nhau và lưu lượng tương tự hoặc khác nhau (`F11_same_rain_pairs.png`).
 
 ### Danh mục Bảng số liệu (`handoff_writer/tables/`)
 * **T01:** Đặc tính kỹ thuật của các nguồn dữ liệu nghiên cứu (`T01_data_sources.csv`).
@@ -475,6 +478,8 @@ Toàn bộ 27 tệp ấn phẩm bàn giao được đóng gói đồng bộ tạ
 * **T05:** Ma trận kết quả tương quan Pearson & Spearman theo các kịch bản (`T05_correlation_results.csv`).
 * **T06:** Bảng phân loại 35 trường hợp ngoại lệ và quyết định xử lý kỹ thuật (`T06_exceptions_decisions.csv`).
 * **T07:** Bảng phân tích độ nhạy của hệ số tương quan khi loại bỏ dữ liệu nghi vấn (`T07_sensitivity.csv`).
+* **T08:** Kịch bản đưa giá trị SUSPECT trở lại (`T08_alternative_suspect_sensitivity.csv`).
+* **T09:** Các bảng `T09_*.csv` cho phân tích cặp tháng và lịch sử mưa.
 
 ### Danh mục Dữ liệu Tuyển chọn (`handoff_writer/selected_data/`)
 * Chuỗi ngày và tháng tích hợp: `hydromet_daily.csv`, `hydromet_monthly.csv`.
@@ -498,7 +503,7 @@ Toàn bộ 27 tệp ấn phẩm bàn giao được đóng gói đồng bộ tạ
 Theo đúng tinh thần của [DAC_TA_NGHIEN_CUU_V1.0.md](docs/DAC_TA_NGHIEN_CUU_V1.0.md) và [PHU_LUC_TRIEN_KHAI_V1.1.md](docs/PHU_LUC_TRIEN_KHAI_V1.1.md), các giới hạn sau cần được người viết báo cáo nhấn mạnh:
 
 1. **Chuỗi dữ liệu 3 năm:** Chuỗi 36 tháng (1.096 ngày) mang tính chất mô tả khám phá ngắn hạn, không đại diện cho quy luật khí hậu hay thủy văn thế kỷ.
-2. **Bản chất lưu lượng vận hành:** Lưu lượng "về hồ" là số liệu công bố vận hành của đơn vị quản lý, chịu tác động trực tiếp từ quy trình điều tiết liên hồ chứa bậc thang phía thượng nguồn (hồ Sông Ba, Ayun Hạ, An Khê - Kanak). Do đó, mối liên hệ mưa - dòng chảy không phải là phản ứng thủy văn tự nhiên thuần túy.
+2. **Bản chất lưu lượng vận hành:** Lưu lượng "về hồ" là số liệu công bố của đơn vị vận hành; định nghĩa thời gian của từng giá trị ngày chưa được xác nhận đầy đủ. Điều tiết các hồ thượng nguồn có thể ảnh hưởng chuỗi, nhưng báo cáo chưa định lượng ảnh hưởng của từng hồ.
 3. **Quyết định không xây dựng Flow Duration Curve (FDC):** Căn cứ theo điều khoản V1.1 §13, đường cong duy trì lưu lượng (FDC) chỉ có giá trị khi chuỗi số liệu là lưu lượng trung bình ngày thực đo liên tục. Số liệu công bố theo ngày của công trình tiềm ẩn tính chất giá trị tức thời tại thời điểm chốt sổ, do đó đồ thị F10 (phân bố tần suất PDF/CDF và boxplot) được sử dụng thay thế một cách chuẩn mực.
 4. **Độ phân giải chuỗi mưa ngày CHIRPS v3 `rnl`:** Sản phẩm ngày CHIRPS v3 `rnl` được phân rã toán học từ ước lượng tổng 5 ngày (pentad) có hỗ trợ từ ERA5. Do đó, tương quan ngày chỉ mang ý nghĩa tham khảo bổ trợ; phân tích tương quan quy mô tháng là cơ sở kết luận khoa học chính.
 5. **Đồng bộ múi giờ:** Số liệu công trình quan trắc theo giờ Việt Nam (UTC+7), trong khi các sản phẩm tái phân tích toàn cầu tính theo chuẩn UTC; sự chênh lệch 7 giờ có thể tạo ra độ lệch pha nhỏ ở các trận mưa ranh giới ngày.
@@ -511,7 +516,7 @@ Theo đúng tinh thần của [DAC_TA_NGHIEN_CUU_V1.0.md](docs/DAC_TA_NGHIEN_CUU
   * [Đặc tả nghiên cứu và triển khai kỹ thuật V1.0](docs/DAC_TA_NGHIEN_CUU_V1.0.md)
   * [Phụ lục hướng dẫn triển khai, bàn giao và nghiệm thu V1.1](docs/PHU_LUC_TRIEN_KHAI_V1.1.md)
   * [Quy trình phối hợp kỹ thuật và nghiệm thu GitHub Issues](docs/WORKFLOW.md)
-* **Dữ liệu Lượng mưa:** Funk, C., et al. (2015). *The climate hazards group infrared precipitation with stations—a new environmental record for monitoring extremes.* Scientific Data, 2, 150066. [https://doi.org/10.1038/sdata.2015.66](https://doi.org/10.1038/sdata.2015.66)
+* **Dữ liệu lượng mưa:** Climate Hazards Center, *CHIRPS3 Data Repository* (2025), [doi:10.15780/G2JQ0P](https://doi.org/10.15780/G2JQ0P); C. Funk *et al.*, “The Climate Hazards Center Infrared Precipitation with Stations, Version 3,” *Scientific Data*, vol. 13, art. 718 (2026), [doi:10.1038/s41597-026-07096-4](https://doi.org/10.1038/s41597-026-07096-4).
 * **Dữ liệu Nhiệt độ:** Muñoz-Sabater, J., et al. (2021). *ERA5-Land: a state-of-the-art global reanalysis dataset for land applications.* Earth System Science Data, 13(9), 4349–4383. [https://doi.org/10.5194/essd-13-4349-2021](https://doi.org/10.5194/essd-13-4349-2021)
 * **Mạng lưới Thủy văn:** Lehner, B., & Grill, G. (2013). *Global river hydrography and network routing: baseline data and new approaches to study the world's large river systems.* Hydrological Processes, 27(15), 2171–2186. [https://doi.org/10.1002/hyp.9740](https://doi.org/10.1002/hyp.9740)
 * **Địa lý công trình:** OpenStreetMap contributors. (2024). *Đập Thủy điện Sông Ba Hạ (way/480785944)*. Open Database License (ODbL). [https://www.openstreetmap.org/way/480785944](https://www.openstreetmap.org/way/480785944)
@@ -525,4 +530,4 @@ Theo đúng tinh thần của [DAC_TA_NGHIEN_CUU_V1.0.md](docs/DAC_TA_NGHIEN_CUU
 
 ## Trạng thái nghiệm thu hiện hành (cập nhật 28/10/2026)
 
-**Trạng thái nhánh chính (main):** Trưởng nhóm đã hoàn tất đối chiếu dữ liệu chính và bộ bàn giao; **PR #9 đã được merge vào `main`** (commit 897a1cd). Bộ dữ liệu, bảng thống kê, biểu đồ và kết quả phân tích trên `main` hiện là nguồn dữ liệu chuẩn mực để hoàn thiện báo cáo đồ án. Các lưu ý phương pháp (sai lệch diện tích 0,41%, kịch bản dữ liệu nghi vấn và giới hạn quan hệ tương quan) đã được phản ánh đầy đủ, minh bạch trong báo cáo Word chính thức.
+**Trạng thái nhánh chính:** Bộ bảng và hình đã được rà soát cho phạm vi tiểu luận. Việc chấp nhận polygon và phương pháp mưa là **có điều kiện**; kết luận về trễ mưa–lưu lượng thay đổi khi đổi cách xử lý SUSPECT. Bản nộp duy nhất của nhóm là [BAO_CAO.docx](docs/BAO_CAO.docx). Khả năng chạy lại toàn bộ từ raw còn phụ thuộc dữ liệu thô lưu riêng.

@@ -8,7 +8,7 @@ from docx.oxml.ns import qn
 
 
 ROOT = Path(__file__).resolve().parents[2]
-REPORT = ROOT / "docs/BAO_CAO_final.docx"
+REPORT = ROOT / "docs/BAO_CAO.docx"
 ASSETS = Path(__file__).resolve().parent
 SOURCES = {2: ASSETS / "H02_workflow.png", 11: ASSETS / "H11_suspect_sensitivity.png"}
 
