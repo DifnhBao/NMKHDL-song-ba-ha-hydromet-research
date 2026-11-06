@@ -38,7 +38,13 @@ from pathlib import Path
 from scipy import stats
 
 ROOT = Path(__file__).resolve().parent.parent
-PROC_DIR = ROOT / "data" / "processed"
+PROCESSED_DIR = ROOT / "data" / "processed"
+HANDOFF_DIR = ROOT / "handoff_writer" / "selected_data"
+# Reuse the committed handoff inputs when the local processed data are absent.
+PROC_DIR = (PROCESSED_DIR if all(
+    (PROCESSED_DIR / name).exists()
+    for name in ("hydromet_monthly.csv", "hydrology_clean.csv", "hydrology_exceptions.csv")
+) else HANDOFF_DIR)
 FIG_DIR = ROOT / "outputs" / "figures"
 TAB_DIR = ROOT / "outputs" / "tables"
 FIG_DIR.mkdir(parents=True, exist_ok=True)
@@ -127,7 +133,7 @@ def create_F07(valid):
     ax1.set_xlabel("Tháng")
 
     ax1.set_title(
-        "F07 — So sánh lượng mưa lưu vực và lưu lượng về hồ theo tháng 2023–2025\n"
+        "So sánh lượng mưa lưu vực và lưu lượng về hồ theo tháng 2023–2025\n"
         f"(n = {len(valid)} tháng hợp lệ; mưa: CHIRPS v3; lưu lượng: Sông Ba Hạ)",
         fontweight="bold"
     )
@@ -185,7 +191,7 @@ def create_F08(valid, corr_results):
     ax.set_xlabel("Lượng mưa lưu vực (mm/tháng)")
     ax.set_ylabel("Lưu lượng trung bình về hồ (m³/s)")
     ax.set_title(
-        "F08 — Scatter plot mưa tháng – lưu lượng tháng\n"
+        "Scatter plot mưa tháng – lưu lượng tháng\n"
         "(CHIRPS v3 Final × dữ liệu vận hành Sông Ba Hạ; "
         "tương quan ≠ nhân quả)",
         fontweight="bold"

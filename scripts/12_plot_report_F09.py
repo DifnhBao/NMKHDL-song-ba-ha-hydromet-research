@@ -131,7 +131,7 @@ def main() -> None:
     ax.set_xlim(-0.3, len(x) - 0.7)
     ax.grid(axis="y", alpha=0.28)
     ax.legend(loc="upper left", fontsize=9)
-    ax.set_title("F09 — Độ nhạy của tương quan mưa–lưu lượng theo cách xử lý SUSPECT",
+    ax.set_title("Độ nhạy của tương quan mưa–lưu lượng theo cách xử lý SUSPECT",
                  fontweight="bold", pad=16)
     fig.text(0.5, 0.012,
              "Nguồn: T05, T07, T08; lag 0/lag 1 chỉ là liên hệ thống kê, "

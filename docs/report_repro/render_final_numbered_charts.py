@@ -1,10 +1,13 @@
-"""Render report-only plots with titles matching Word's Figure captions."""
+"""Render report-only plots without in-image titles.
+
+Word supplies "Hình N." captions, so the image itself must not repeat the title.
+Panel labels such as "(a) Phân bố toàn giai đoạn" are kept.
+"""
 from __future__ import annotations
 
 from contextlib import contextmanager
 from pathlib import Path
 import importlib.util
-import re
 
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
@@ -13,6 +16,8 @@ from matplotlib.figure import Figure
 ROOT = Path(__file__).resolve().parents[2]
 OUT = Path(__file__).with_name("final_numbered_charts")
 OUT.mkdir(exist_ok=True)
+
+FIGURE_TITLE_PREFIXES = ("Hình ", "F0", "F1")
 
 
 def load_module(name: str, path: Path):
@@ -26,19 +31,17 @@ def load_module(name: str, path: Path):
 
 
 @contextmanager
-def report_titles():
+def drop_figure_titles():
     original_set_title = Axes.set_title
     original_suptitle = Figure.suptitle
 
     def set_title(self, label, *args, **kwargs):
-        if isinstance(label, str):
-            label = re.sub(r"^Hình ([2-8])\b", lambda m: f"Hình {int(m.group(1)) + 1}", label)
+        if isinstance(label, str) and label.startswith(FIGURE_TITLE_PREFIXES):
+            return None
         return original_set_title(self, label, *args, **kwargs)
 
     def suptitle(self, t, *args, **kwargs):
-        if isinstance(t, str):
-            t = re.sub(r"^Hình 10\b", "Hình 12", t)
-        return original_suptitle(self, t, *args, **kwargs)
+        return None
 
     Axes.set_title = set_title
     Figure.suptitle = suptitle
@@ -53,7 +56,7 @@ SNAPSHOT = Path(__file__).with_name("engine")
 eda = load_module("eda_report_figures", SNAPSHOT / "06_exploratory_analysis.py")
 runoff = load_module("runoff_report_figures", SNAPSHOT / "07_rainfall_runoff_analysis.py")
 
-with report_titles():
+with drop_figure_titles():
     daily, monthly, hydro_qa, _ = eda.load_data()
     eda.create_F02(monthly)
     eda.create_F03(monthly)

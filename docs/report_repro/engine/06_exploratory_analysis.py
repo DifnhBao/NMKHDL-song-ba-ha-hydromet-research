@@ -438,7 +438,7 @@ def create_F02(monthly):
     from matplotlib.patches import Patch
     legend_elements = [
         Patch(facecolor="#2196F3", label="Mùa mưa (T5–T11)"),
-        Patch(facecolor="#FF9800", label="Mùa ít mưa (T12–T4)")
+        Patch(facecolor="#FF9800", label="Mùa khô (T12–T4)")
     ]
     ax.legend(handles=legend_elements, loc="upper left")
     ax.grid(axis="y", alpha=0.3)

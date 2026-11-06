@@ -41,7 +41,14 @@ import matplotlib.dates as mdates
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-PROC_DIR = ROOT / "data" / "processed"
+PROCESSED_DIR = ROOT / "data" / "processed"
+HANDOFF_DIR = ROOT / "handoff_writer" / "selected_data"
+# A fresh clone contains curated inputs but not the ignored processed directory.
+# Select one complete source directory so tables are never mixed across versions.
+PROC_DIR = (PROCESSED_DIR if all(
+    (PROCESSED_DIR / name).exists()
+    for name in ("hydromet_daily.csv", "hydromet_monthly.csv", "hydrology_clean.csv")
+) else HANDOFF_DIR)
 FIG_DIR = ROOT / "outputs" / "figures"
 TAB_DIR = ROOT / "outputs" / "tables"
 FIG_DIR.mkdir(parents=True, exist_ok=True)
@@ -430,7 +437,7 @@ def create_F02(monthly):
     ax.set_xticklabels(rain["year_month"].iloc[::3], rotation=45, ha="right")
     ax.set_xlabel("Tháng")
     ax.set_ylabel("Lượng mưa (mm)")
-    ax.set_title("F02 — Biến động lượng mưa theo tháng 2023–2025\n"
+    ax.set_title("Biến động lượng mưa theo tháng 2023–2025\n"
                  "(Nguồn: CHIRPS v3 Final — trung bình lưu vực sông Ba đến TĐ Sông Ba Hạ)",
                  fontweight="bold")
 
@@ -438,7 +445,7 @@ def create_F02(monthly):
     from matplotlib.patches import Patch
     legend_elements = [
         Patch(facecolor="#2196F3", label="Mùa mưa (T5–T11)"),
-        Patch(facecolor="#FF9800", label="Mùa ít mưa (T12–T4)")
+        Patch(facecolor="#FF9800", label="Mùa khô (T12–T4)")
     ]
     ax.legend(handles=legend_elements, loc="upper left")
     ax.grid(axis="y", alpha=0.3)
@@ -472,7 +479,7 @@ def create_F03(monthly):
     ax.set_xticklabels(temp["year_month"].iloc[::3], rotation=45, ha="right")
     ax.set_xlabel("Tháng")
     ax.set_ylabel("Nhiệt độ (°C)")
-    ax.set_title("F03 — Nhiệt độ trung bình tháng 2023–2025\n"
+    ax.set_title("Nhiệt độ trung bình tháng 2023–2025\n"
                  "(Nguồn: ERA5-Land 2 m — trung bình có trọng số cos(vĩ độ) "
                  "trên lưu vực)",
                  fontweight="bold")
@@ -520,7 +527,7 @@ def create_F04(daily, hydro_qa):
 
     ax.set_xlabel("Ngày")
     ax.set_ylabel("Lưu lượng (m³/s)")
-    ax.set_title("F04 — Lưu lượng nước về hồ theo ngày 2023–2025\n"
+    ax.set_title("Lưu lượng nước về hồ theo ngày 2023–2025\n"
                  "(Nguồn: Website Sông Ba Hạ — sbh.vn)",
                  fontweight="bold")
     ax.legend(loc="upper left")
@@ -549,7 +556,7 @@ def create_F05(monthly):
     ax.set_xlabel("Tháng")
     ax.set_ylabel("Lưu lượng trung bình (m³/s)")
     ax.set_title(
-        "F05 — Lưu lượng nước về hồ trung bình theo tháng 2023–2025\n"
+        "Lưu lượng nước về hồ trung bình theo tháng 2023–2025\n"
         "(Trung bình các giá trị ngày đủ ĐK; nguồn: Website Sông Ba Hạ)",
         fontweight="bold")
 
@@ -602,7 +609,7 @@ def create_F06(daily, hydro_qa):
                    alpha=0.6, label="Mực nước chết (101,00 m)")
         ax.set_ylabel("Mực nước (m)")
         ax.set_title(
-            f"F06 — Biến động mực nước thượng lưu sau kiểm định 2023–2025\n"
+            f"Biến động mực nước thượng lưu sau kiểm định 2023–2025\n"
             f"({valid_pct:.0f}% dữ liệu hợp lệ; nguồn: Website Sông Ba Hạ)",
             fontweight="bold")
         ax.legend(loc="upper right")
@@ -619,7 +626,7 @@ def create_F06(daily, hydro_qa):
         ax.set_xlabel("Lưu lượng (m³/s)")
         ax.set_ylabel("Số ngày")
         ax.set_title(
-            "F06 (thay thế) — Phân bố lưu lượng nước về hồ 2023–2025\n"
+            "Phân bố lưu lượng nước về hồ 2023–2025\n"
             f"(Mực nước không đủ tin cậy: {valid_pct:.0f}% hợp lệ; "
             "nguồn: Website Sông Ba Hạ)",
             fontweight="bold")
@@ -690,7 +697,7 @@ def create_F10(daily, hydro_qa):
     ax.grid(alpha=0.3)
 
     fig.suptitle(
-        "F10 — Phân bố lưu lượng nước về hồ 2023–2025 "
+        "Phân bố lưu lượng nước về hồ 2023–2025 "
         "(chỉ ngày VALID/CORRECTED)\nNguồn: Website Sông Ba Hạ — sbh.vn",
         fontweight="bold", fontsize=11)
     fig.tight_layout()

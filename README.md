@@ -1,16 +1,22 @@
 # Nghiên cứu Dữ liệu Khí tượng Thủy văn — Lưu vực sông Ba đến Thủy điện Sông Ba Hạ (2023–2025)
 
-**Báo cáo nộp:** [docs/BAO_CAO.docx](docs/BAO_CAO.docx) · **Học phần:** Nhập môn khoa học dữ liệu · **Giảng viên:** Nguyễn Ngọc Duy. Nhóm gồm Lê Đình Bảo (N23DCCN141), Đặng Văn Hiệp (N23DCCN155) và Nguyễn Ngọc Quốc Huy (N23DCCN162).
+**Báo cáo nộp:** [docs/BAO_CAO.pdf (Xem trực tuyến)](docs/BAO_CAO.pdf) · [docs/BAO_CAO.docx (Bản Word gốc)](docs/BAO_CAO.docx) · **Học phần:** Nhập môn khoa học dữ liệu · **GVHD:** ThS. Nguyễn Ngọc Duy
+
+| Thành viên | MSSV | Vai trò & Nhiệm vụ chính |
+| :--- | :---: | :--- |
+| **Lê Đình Bảo** (Nhóm trưởng) | `N23DCCN141` | Nghiên cứu tài liệu, kiến trúc pipeline, thu thập và tổ chức dữ liệu đầu vào (CHIRPS, ERA5-Land, HydroBASINS, sbh.vn). |
+| **Nguyễn Ngọc Quốc Huy** | `N23DCCN162` | Tiền xử lý, kiểm soát chất lượng dữ liệu (QA/QC), phát hiện và phân loại các bản ghi ngoại lệ (35 lượt), chuẩn hóa dữ liệu. |
+| **Đặng Văn Hiệp** | `N23DCCN155` | Phân tích thống kê (EDA), phân tích tương quan mưa – dòng chảy, kiểm tra độ nhạy, trực quan hóa và biên soạn báo cáo. |
 
 <div align="center">
 
 [![Học phần](https://img.shields.io/badge/H%E1%BB%8Dc%20ph%E1%BA%A7n-Nh%E1%BA%ADp%20m%C3%B4n%20KHDL%20(PTIT)-red.svg)](https://portal.ptit.edu.vn/)
-[![Thời gian](https://img.shields.io/badge/Th%E1%BB%9Di%20gian-01%2F2023%20%E2%80%93%2012%2F2025-blue.svg)](#m%E1%BB%A5c-ti%C3%AAu-v%C3%A0-c%C3%A2u-h%E1%BB%8Fi-nghi%C3%AAn-c%E1%BB%A9u)
-[![Chuỗi ngày](https://img.shields.io/badge/Chu%E1%BB%97i%20th%E1%BB%9Di%20gian-1.096%20ng%C3%A0y%20(36%20th%C3%A1ng)-brightgreen.svg)](#h%E1%BB%87-th%E1%BB%91ng-c%E1%BB%95ng-nghi%E1%BB%87m-thu-gate-16)
-[![Diện tích lưu vực](https://img.shields.io/badge/Di%E1%BB%87n%20t%C3%ADch-11.160%2C6%20km%C2%B2%20(%CE%94%200%2C41%25)-orange.svg)](#k%E1%BA%BFt-qu%E1%BA%A3-ch%C3%ADnh)
+[![Thời gian](https://img.shields.io/badge/Th%E1%BB%9Di%20gian-01%2F2023%20%E2%80%93%2012%2F2025-blue.svg)](#1-mục-tiêu-và-câu-hỏi-nghiên-cứu)
+[![Chuỗi ngày](https://img.shields.io/badge/Chu%E1%BB%97i%20th%E1%BB%9Di%20gian-1.096%20ng%C3%A0y%20(36%20th%C3%A1ng)-brightgreen.svg)](#7-hệ-thống-cổng-nghiệm-thu-gate-16)
+[![Diện tích lưu vực](https://img.shields.io/badge/Di%E1%BB%87n%20t%C3%ADch-11.160%2C6%20km%C2%B2%20(%CE%94%200%2C41%25)-orange.svg)](#9-kết-quả-nghiên-cứu-cốt-lõi)
 [![Python](https://img.shields.io/badge/Python-%E2%89%A5%203.11%20%7C%203.13-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
-[![Nghiệm thu](https://img.shields.io/badge/Nghi%E1%BB%87m%20thu-%C4%90%C3%A3%20merge%20PR%20%239-brightgreen.svg)](#h%E1%BB%87-th%E1%BB%91ng-c%E1%BB%95ng-nghi%E1%BB%87m-thu-gate-16)
-[![Tái lập](https://img.shields.io/badge/T%C3%A1i%20l%E1%BA%ADp-Ch%C6%B0a%20x%C3%A1c%20minh%20end--to--end-yellow.svg)](#h%C6%B0%E1%BB%9Bng-d%E1%BA%ABn-ch%E1%BA%A1y-quy-tr%C3%ACnh)
+[![Nghiệm thu](https://img.shields.io/badge/Nghi%E1%BB%87m%20thu-%C4%90%C3%A3%20merge%20PR%20%239-brightgreen.svg)](#7-hệ-thống-cổng-nghiệm-thu-gate-16)
+[![Tái lập](https://img.shields.io/badge/T%C3%A1i%20l%E1%BA%ADp-Ch%C6%B0a%20x%C3%A1c%20minh%20end--to--end-yellow.svg)](#6-hướng-dẫn-chạy-quy-trình)
 
 </div>
 
@@ -115,9 +121,10 @@ flowchart TD
 
 ```text
 NMKHDL-song-ba-ha-hydromet-research/
-├── docs/                                  # Đặc tả kỹ thuật và quy trình gốc
-│   ├── BAO_CAO.docx                       # Bản báo cáo duy nhất để nộp
-│   ├── report_repro/                      # PNG và mã vẽ đúng các hình trong báo cáo
+├── docs/                                  # Đặc tả kỹ thuật và báo cáo hoàn chỉnh
+│   ├── BAO_CAO.pdf                        # Bản báo cáo PDF xem trực tiếp trên GitHub
+│   ├── BAO_CAO.docx                       # Bản báo cáo Word hoàn chỉnh nộp học phần
+│   ├── report_repro/                      # PNG và mã vẽ độc lập khớp đúng các hình trong báo cáo
 │   ├── DAC_TA_NGHIEN_CUU_V1.0.md          # Đặc tả yêu cầu nghiên cứu V1.0
 │   ├── PHU_LUC_TRIEN_KHAI_V1.1.md          # Phụ lục hướng dẫn triển khai kỹ thuật V1.1
 │   └── WORKFLOW.md                        # Quy trình phối hợp và tiêu chí nghiệm thu PR
@@ -340,6 +347,18 @@ python scripts/07_rainfall_runoff_analysis.py
 python scripts/08_write_handoff.py
 ```
 
+> [!TIP]
+> **Tái lập nhanh trên bản clone sạch (không cần dữ liệu thô):**
+> Do dữ liệu thủy văn thô `data/raw/` được bảo mật nội bộ, các script phân tích khám phá cốt lõi (GATE 5) và mở rộng được thiết kế cơ chế tự động đọc dữ liệu đã kiểm định từ `handoff_writer/selected_data/`:
+> ```bash
+> python scripts/06_exploratory_analysis.py      # Tạo bảng T01–T04 và biểu đồ F02–F06, F10
+> python scripts/07_rainfall_runoff_analysis.py   # Tạo bảng T05–T07 và biểu đồ F07–F09
+> python scripts/10_suspect_sensitivity.py       # Kiểm tra độ nhạy kịch bản ngoại lệ SUSPECT
+> python scripts/12_plot_report_F09.py           # Vẽ biểu đồ so sánh độ nhạy tương quan
+> python scripts/13_extended_rq3_analysis.py     # Phân tích cặp tháng có mưa tương tự và lịch sử mưa
+> ```
+> Cả 5 script đều chạy độc lập, hoàn tất trong vài giây và kết xuất trực tiếp vào `outputs/`.
+
 ---
 
 ### Cơ chế chạy lại và ghi đè dữ liệu (Idempotency)
@@ -530,4 +549,4 @@ Theo đúng tinh thần của [DAC_TA_NGHIEN_CUU_V1.0.md](docs/DAC_TA_NGHIEN_CUU
 
 ## Trạng thái nghiệm thu hiện hành (cập nhật 28/10/2026)
 
-**Trạng thái nhánh chính:** Bộ bảng và hình đã được rà soát cho phạm vi tiểu luận. Việc chấp nhận polygon và phương pháp mưa là **có điều kiện**; kết luận về trễ mưa–lưu lượng thay đổi khi đổi cách xử lý SUSPECT. Bản nộp duy nhất của nhóm là [BAO_CAO.docx](docs/BAO_CAO.docx). Khả năng chạy lại toàn bộ từ raw còn phụ thuộc dữ liệu thô lưu riêng.
+**Trạng thái nhánh chính:** Bộ bảng và hình đã được rà soát cho phạm vi tiểu luận. Việc chấp nhận polygon và phương pháp mưa là **có điều kiện**; kết luận về trễ mưa–lưu lượng thay đổi khi đổi cách xử lý SUSPECT. Bản nộp hoàn chỉnh của nhóm gồm [BAO_CAO.pdf](docs/BAO_CAO.pdf) (xem trực tiếp trên GitHub) và [BAO_CAO.docx](docs/BAO_CAO.docx) (bản Word gốc). Khả năng chạy lại toàn bộ từ raw còn phụ thuộc dữ liệu thô lưu riêng.
